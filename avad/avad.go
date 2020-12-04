@@ -25,9 +25,9 @@ func DialOne(addr string) {
 				u := url.URL{Scheme: "ws", Host: addr, Path: "/echo"}
 				c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 				if err != nil {
-					log.Printf("尝试连接节点%s失败,3s后重试:\n", addr)
+					log.Printf("尝试连接节点%s失败,10s后重试:\n", addr)
 					connsStatus.Set(addr, false)
-					time.Sleep(3 * time.Second)
+					time.Sleep(10 * time.Second)
 					continue
 				}
 				connsStatus.Set(addr, true)
@@ -43,6 +43,10 @@ func DLocal() {
 	for _, addr := range addrs {
 		go DialOne(addr)
 	}
+
+	go Socks5d()
+
+
 	http.HandleFunc("/start", handel)
 	addr := "localhost:4000"
 	log.Fatal(http.ListenAndServe(addr, nil))

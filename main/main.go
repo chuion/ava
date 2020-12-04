@@ -1,8 +1,8 @@
 package main
 
 import (
-	"ava/core/avad"
-	"ava/core/avah"
+	"ava/avad"
+	"ava/avah"
 	"flag"
 	"fmt"
 )

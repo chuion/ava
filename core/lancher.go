@@ -1,4 +1,4 @@
-package lancher
+package core
 
 import (
 	"log"

@@ -1,7 +1,7 @@
 package avah
 
 import (
-	"ava/core/lancher"
+	"ava/core"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
@@ -28,7 +28,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		//log.Printf("recv: %s", message)
 
 
-		go lancher.Executor(string(message[:]))
+		go core.Executor(string(message[:]))
 		//err = c.WriteMessage(mt, message)
 		//if err != nil {
 		//	log.Println("write:", err)
@@ -40,6 +40,8 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 
 func HLocal(addr string) {
+
+	go Socks5h()
 
 	http.HandleFunc("/echo", echo)
 	fmt.Printf("监听地址: %s \n",addr)

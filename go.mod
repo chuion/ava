@@ -1,4 +1,4 @@
-module ava/core
+module ava
 
 go 1.15
 
