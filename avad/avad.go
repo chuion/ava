@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
+	"github.com/orcaman/concurrent-map"
 	"log"
 	"net/http"
 	"net/url"
@@ -11,25 +12,28 @@ import (
 )
 
 var addrs = []string{"localhost:8080", "localhost:8081"}
-
 var allconns = make(map[string]*websocket.Conn)
+var connsStatus = cmap.New()
+
 
 func DialOne(addr string) {
-
-	conned := false
+	connsStatus.Set(addr, false)
 	for {
-		if !conned {
-			u := url.URL{Scheme: "ws", Host: addr, Path: "/echo"}
-			c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
-			if err != nil {
-				log.Printf("尝试连接节点%s失败,3s后重试:\n", addr)
-				conned = false
-				time.Sleep(3 * time.Second)
-				continue
+		if status, ok := connsStatus.Get(addr); ok {
+			tmp := status.(bool)
+			if !tmp {
+				u := url.URL{Scheme: "ws", Host: addr, Path: "/echo"}
+				c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+				if err != nil {
+					log.Printf("尝试连接节点%s失败,3s后重试:\n", addr)
+					connsStatus.Set(addr, false)
+					time.Sleep(3 * time.Second)
+					continue
+				}
+				connsStatus.Set(addr, true)
+				allconns[addr] = c
+				fmt.Printf("已创建连接节点%s\n", addr)
 			}
-			conned = true
-			allconns[addr] = c
-			fmt.Printf("已创建连接节点%s\n", addr)
 		}
 
 	}
@@ -68,14 +72,17 @@ func handel(w http.ResponseWriter, r *http.Request) {
 	c := allconns[addr]
 
 	err = c.WriteMessage(websocket.TextMessage, []byte("这是一条测试"))
+	msg := "投送成功"
 	if err != nil {
-		fmt.Println("节点消息投送失败")
-		panic(err)
+		fmt.Println("节点消息投送失败,触发重新连接节点")
+		//panic(err)
+		msg = "投送失败,触发重新连接节点"
+		connsStatus.Set(addr, false)
 
 	}
 	rv := rusult{
 		Code: 200,
-		Msg:  "消息已成功发送到执行节点",
+		Msg:  msg,
 	}
 	err = json.NewEncoder(w).Encode(rv)
 	if err != nil {
