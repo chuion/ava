@@ -17,7 +17,7 @@ func Socks5h() {
 		panic(err)
 	}
 	defer listen.Close()
-	fmt.Printf("供远程连接的地址为%s:%d:\n", net.ParseIP(ip),port)
+	fmt.Printf("tcp监听地址为%s:%d:\n", net.ParseIP(ip),port)
 	socks5listen, err := net.ListenTCP("tcp", &net.TCPAddr{net.ParseIP(ip), s5port, ""})
 	if err != nil {
 		panic(err)
@@ -35,14 +35,14 @@ func Server(listen *net.TCPListener, s5listen *net.TCPListener) {
 			fmt.Println("连接socks5服务异常:", err.Error())
 			continue
 		}
-		fmt.Println("接受客户端连接来自:", s5conn.RemoteAddr().String())
+		//fmt.Println("接受客户端连接来自:", s5conn.RemoteAddr().String())
 
 		conn, err := listen.Accept()
 		if err != nil {
 			fmt.Println("接受被控节点连接异常:", err.Error())
 			continue
 		}
-		fmt.Println("被控节点连接来自:", conn.RemoteAddr().String())
+		//fmt.Println("被控节点连接来自:", conn.RemoteAddr().String())
 
 		go func() {
 			defer s5conn.Close()

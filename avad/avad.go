@@ -6,46 +6,69 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/orcaman/concurrent-map"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"time"
 )
 
-var addrs = []string{"localhost:8080", "localhost:8081"}
-var allconns = make(map[string]*websocket.Conn)
-var connsStatus = cmap.New()
+//var addrs = []string{"localhost:8080", "localhost:8081"}
+var addrs = []string{"localhost:8080"}
+var allconn = make(map[string]*websocket.Conn)
+var wsStatus = cmap.New()
 
-
-func DialOne(addr string) {
-	connsStatus.Set(addr, false)
+func DialWs(addr string) {
+	wsStatus.Set(addr, false)
 	for {
-		if status, ok := connsStatus.Get(addr); ok {
+		if status, ok := wsStatus.Get(addr); ok {
 			tmp := status.(bool)
 			if !tmp {
 				u := url.URL{Scheme: "ws", Host: addr, Path: "/echo"}
 				c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 				if err != nil {
-					log.Printf("尝试连接节点%s失败,10s后重试:\n", addr)
-					connsStatus.Set(addr, false)
+					log.Printf("尝试连接节点ws通道%s失败,10s后重试:\n", addr)
+					wsStatus.Set(addr, false)
 					time.Sleep(10 * time.Second)
 					continue
 				}
-				connsStatus.Set(addr, true)
-				allconns[addr] = c
-				fmt.Printf("已创建连接节点%s\n", addr)
+				wsStatus.Set(addr, true)
+				allconn[addr] = c
+				fmt.Printf("已创建连接节点ws通道%s\n", addr)
 			}
 		}
 
 	}
 }
 
+
+
+func DialS5(listenTarget string) {
+	var RemoteConn net.Conn
+	var err error
+	for {
+		for {
+			RemoteConn, err = net.Dial("tcp", listenTarget)
+			if err == nil {
+				break
+			}
+		}
+		go Handshake(RemoteConn)
+	}
+}
+
+
 func DLocal() {
+	//连接websocket
 	for _, addr := range addrs {
-		go DialOne(addr)
+		go DialWs(addr)
 	}
 
-	go Socks5d()
-
+	//连接内网穿透
+	for _, addr := range addrs {
+		host, _, _ := net.SplitHostPort(addr)
+		addr = host + ":" + "18080"
+		go DialS5(addr)
+	}
 
 	http.HandleFunc("/start", handel)
 	addr := "localhost:4000"
@@ -73,7 +96,7 @@ func handel(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	//todo 往哪个连接发应解析业务逻辑
 	addr := p.Cmd
-	c := allconns[addr]
+	c := allconn[addr]
 
 	err = c.WriteMessage(websocket.TextMessage, []byte("这是一条测试"))
 	msg := "投送成功"
@@ -81,7 +104,7 @@ func handel(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("节点消息投送失败,触发重新连接节点")
 		//panic(err)
 		msg = "投送失败,触发重新连接节点"
-		connsStatus.Set(addr, false)
+		wsStatus.Set(addr, false)
 
 	}
 	rv := rusult{

@@ -18,7 +18,7 @@ func (ip sockIP) toAddr() string {
 	return fmt.Sprintf("%d.%d.%d.%d:%d", ip.A, ip.B, ip.C, ip.D, ip.PORT)
 }
 
-func handleClientRequest(client net.Conn) {
+func Handshake(client net.Conn) {
 	if client == nil {
 		return
 	}
@@ -66,20 +66,3 @@ func handleClientRequest(client net.Conn) {
 
 }
 
-func slave(listenTarget string) {
-	var RemoteConn net.Conn
-	var err error
-	for {
-		for {
-			RemoteConn, err = net.Dial("tcp", listenTarget)
-			if err == nil {
-				break
-			}
-		}
-		go handleClientRequest(RemoteConn)
-	}
-}
-
-func Socks5d() {
-	slave("127.0.0.1:18080")
-}
