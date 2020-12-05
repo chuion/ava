@@ -77,6 +77,7 @@ func DLocal() {
 }
 
 type Task struct {
+	Route  string
 	Cmd  string
 	Args string
 }
@@ -95,15 +96,16 @@ func handel(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	//todo 往哪个连接发应解析业务逻辑
-	addr := p.Cmd
+	addr := p.Route
 	c := allconn[addr]
 
-	err = c.WriteMessage(websocket.TextMessage, []byte("这是一条测试"))
+	err = c.WriteJSON(p)
 	msg := "投送成功"
 	if err != nil {
 		fmt.Println("节点消息投送失败,触发重新连接节点")
 		//panic(err)
 		msg = "投送失败,触发重新连接节点"
+		//panic(err)
 		wsStatus.Set(addr, false)
 
 	}

@@ -8,8 +8,13 @@ import (
 	"net/http"
 )
 
-
 var upgrader = websocket.Upgrader{} // use default options
+
+type Task struct {
+	Route string `json:"route"`
+	Cmd   string `json:"cmd"`
+	Args  string `json:"args"`
+}
 
 func echo(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
@@ -19,16 +24,16 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer c.Close()
+	p := Task{}
 	for {
-		_, message, err := c.ReadMessage()
+		err := c.ReadJSON(&p)
 		if err != nil {
-			log.Println("read:", err)
+			log.Println("readjson:", err)
 			break
 		}
 		//log.Printf("recv: %s", message)
 
-
-		go core.Executor(string(message[:]))
+		go core.Executor(p.Cmd, p.Args)
 		//err = c.WriteMessage(mt, message)
 		//if err != nil {
 		//	log.Println("write:", err)
@@ -37,13 +42,11 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
-
 func HLocal(addr string) {
 
 	go Socks5h()
 
 	http.HandleFunc("/echo", echo)
-	fmt.Printf("ws监听地址: %s \n",addr)
+	fmt.Printf("ws监听地址: %s \n", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
