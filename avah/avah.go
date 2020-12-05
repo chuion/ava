@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
+	"strings"
 )
 
 var upgrader = websocket.Upgrader{} // use default options
@@ -42,10 +43,9 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HLocal(addr string) {
-
+func HLocal() {
+	addr:=strings.Join([]string{"0.0.0.0",":", core.WsPort} , "")
 	go Socks5h()
-
 	http.HandleFunc("/echo", echo)
 	fmt.Printf("ws监听地址: %s \n", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))

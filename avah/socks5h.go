@@ -1,32 +1,38 @@
 package avah
 
 import (
+	"ava/core"
 	"fmt"
 	"io"
 	"net"
+	"strconv"
 	"time"
 )
 
-var ip = "0.0.0.0"
-var port = 18080
-var s5port = 28080
-
 func Socks5h() {
-	listen, err := net.ListenTCP("tcp", &net.TCPAddr{net.ParseIP(ip), port, ""})
+	port,_ := strconv.Atoi(core.TcpPort)
+	s5port,_ := strconv.Atoi(core.SocksPort)
+
+	listen, err := net.ListenTCP("tcp", &net.TCPAddr{IP: net.ParseIP("0.0.0.0"), Port: port})
 	if err != nil {
 		panic(err)
 	}
 	defer listen.Close()
-	fmt.Printf("tcp监听地址为%s:%d:\n", net.ParseIP(ip),port)
-	socks5listen, err := net.ListenTCP("tcp", &net.TCPAddr{net.ParseIP(ip), s5port, ""})
+	fmt.Printf("tcp监听地址为%s:%d\n", net.ParseIP("0.0.0.0"),port)
+	socks5listen, err := net.ListenTCP("tcp", &net.TCPAddr{IP: net.ParseIP("0.0.0.0"), Port: s5port})
+
 	if err != nil {
 		panic(err)
 	}
 	defer socks5listen.Close()
-	fmt.Printf("本机socks5端口为 %d:\n", s5port)
+	fmt.Printf("本机socks5端口为: %d\n", s5port)
 
 	Server(listen, socks5listen)
 }
+
+
+
+
 
 func Server(listen *net.TCPListener, s5listen *net.TCPListener) {
 	for {

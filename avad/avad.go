@@ -1,6 +1,7 @@
 package avad
 
 import (
+	"ava/core"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
@@ -9,11 +10,10 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
-//var addrs = []string{"localhost:8080", "localhost:8081"}
-var addrs = []string{"localhost:8080"}
 var allconn = make(map[string]*websocket.Conn)
 var wsStatus = cmap.New()
 
@@ -27,6 +27,7 @@ func DialWs(addr string) {
 				c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 				if err != nil {
 					log.Printf("尝试连接节点ws通道%s失败,10s后重试:\n", addr)
+					panic(err)
 					wsStatus.Set(addr, false)
 					time.Sleep(10 * time.Second)
 					continue
@@ -39,8 +40,6 @@ func DialWs(addr string) {
 
 	}
 }
-
-
 
 func DialS5(listenTarget string) {
 	var RemoteConn net.Conn
@@ -57,29 +56,10 @@ func DialS5(listenTarget string) {
 }
 
 
-func DLocal() {
-	//连接websocket
-	for _, addr := range addrs {
-		go DialWs(addr)
-	}
-
-	//连接内网穿透
-	for _, addr := range addrs {
-		host, _, _ := net.SplitHostPort(addr)
-		addr = host + ":" + "18080"
-		go DialS5(addr)
-	}
-
-	http.HandleFunc("/start", handel)
-	addr := "localhost:4000"
-	log.Fatal(http.ListenAndServe(addr, nil))
-
-}
-
 type Task struct {
-	Route  string
-	Cmd  string
-	Args string
+	Route string
+	Cmd   string
+	Args  string
 }
 
 type rusult struct {
@@ -118,5 +98,26 @@ func handel(w http.ResponseWriter, r *http.Request) {
 		//... handle error
 		panic(err)
 	}
+
+}
+
+
+func DLocal(addrs []string) {
+	//连接websocket
+
+	for _, host := range addrs {
+		addr := strings.Join([]string{host, ":", core.WsPort}, "")
+		go DialWs(addr)
+	}
+
+	//连接内网穿透
+	for _, host := range addrs {
+		addr := strings.Join([]string{host, ":", core.TcpPort}, "")
+		go DialS5(addr)
+	}
+
+	http.HandleFunc("/start", handel)
+	addr := strings.Join([]string{"localhost", ":", core.Web}, "")
+	log.Fatal(http.ListenAndServe(addr, nil))
 
 }
