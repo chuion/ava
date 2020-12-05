@@ -16,11 +16,11 @@ import (
 
 //ip--conn对应map
 var allconn = make(map[string]*websocket.Conn)
+var nodeTask = make(map[string]core.LauncherConf)
 var wsStatus = cmap.New()
 
 func DialWs(addr string) {
-	host:=strings.Split(addr,":")[0]
-
+	host := strings.Split(addr, ":")[0]
 
 	wsStatus.Set(host, false)
 	for {
@@ -30,15 +30,23 @@ func DialWs(addr string) {
 				u := url.URL{Scheme: "ws", Host: addr, Path: "/echo"}
 				c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 				if err != nil {
-					log.Printf("尝试连接节点ws通道%s失败,10s后重试:\n", addr)
+					log.Debug().Msgf("尝试连接节点ws通道%s失败,10s后重试:\n", addr)
 					wsStatus.Set(host, false)
 					time.Sleep(10 * time.Second)
 					continue
 				}
-				host:=strings.Split(u.Host,":")[0]
+				host := strings.Split(u.Host, ":")[0]
 				wsStatus.Set(host, true)
 				allconn[host] = c
 				log.Debug().Msgf("已创建连接节点ws通道%s\n", addr)
+
+				p := core.LauncherConf{}
+				err = c.ReadJSON(&p)
+				if err != nil {
+					log.Debug().Msgf("接收节点: %s注册信息失败", host)
+				}
+				log.Debug().Msgf("接收节点: %s注册信息成功,可运行%s", host, p.Worker)
+				nodeTask[host] = p
 			}
 		}
 
@@ -104,12 +112,11 @@ func handel(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func staus(w http.ResponseWriter, r *http.Request)  {
-	rv:=make(map[string]string)
+func staus(w http.ResponseWriter, r *http.Request) {
+	rv := make(map[string]string)
 	for k, v := range allconn {
-		rv[k]=v.LocalAddr().String()
+		rv[k] = v.LocalAddr().String()
 	}
-
 
 	err := json.NewEncoder(w).Encode(rv)
 	if err != nil {
@@ -119,10 +126,18 @@ func staus(w http.ResponseWriter, r *http.Request)  {
 
 }
 
-
-
-func staus2(w http.ResponseWriter, r *http.Request)  {
+func staus2(w http.ResponseWriter, r *http.Request) {
 	err := json.NewEncoder(w).Encode(wsStatus)
+	if err != nil {
+		//... handle error
+		panic(err)
+	}
+
+}
+
+
+func staus3(w http.ResponseWriter, r *http.Request) {
+	err := json.NewEncoder(w).Encode(nodeTask)
 	if err != nil {
 		//... handle error
 		panic(err)
@@ -148,6 +163,7 @@ func DLocal(addrs []string) {
 	http.HandleFunc("/exectask", handel)
 	http.HandleFunc("/status", staus)
 	http.HandleFunc("/status2", staus2)
+	http.HandleFunc("/status3", staus3)
 	addr := strings.Join([]string{"localhost", ":", core.Web}, "")
 	http.ListenAndServe(addr, nil)
 

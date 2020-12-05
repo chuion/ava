@@ -6,12 +6,13 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/spf13/viper"
 
+	"github.com/phuslu/log"
 	"net/http"
 	"strings"
-	"github.com/phuslu/log"
 )
 
 var upgrader = websocket.Upgrader{} // use default options
+var registed bool = false
 
 type Task struct {
 	Route string `json:"route"`
@@ -19,31 +20,41 @@ type Task struct {
 	Args  string `json:"args"`
 }
 
-type Launcher struct {
 
-
-}
-
-func initWorker() (config Launcher) {
+func initWorker() (config core.LauncherConf) {
 
 	viper.SetConfigName("launcher") // 设置配置文件名 (不带后缀)
 	viper.AddConfigPath(".")        // 第一个搜索路径
 	err := viper.ReadInConfig()     // 读取配置数据
 	if err != nil {
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+		panic(fmt.Errorf("未找到launcher.json: %s \n", err))
 	}
 	viper.Unmarshal(&config) // 将配置信息绑定到结构体上
-	fmt.Println(config)
+	//fmt.Println(config)
 	return
 }
 
+func reg(c *websocket.Conn)  {
+		log.Debug().Msgf("接到管理端ws连接成功,开始注册/更新业务功能\n")
+		config := initWorker()
+		err := c.WriteJSON(config)
+		if err != nil {
+			log.Debug().Msgf("注册/更新业务功能失败\n")
+
+		}
+	}
+
+
+
+
 func echo(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
-	log.Debug().Msgf("接到管理端ws接成功\n")
 	if err != nil {
-		log.Debug().Msgf("upgrade:", err)
+		log.Debug().Msgf("ws握手失败: %s", err)
 		return
 	}
+	reg(c)
+
 	defer c.Close()
 	p := Task{}
 	for {
