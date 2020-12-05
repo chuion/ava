@@ -14,26 +14,30 @@ import (
 	"time"
 )
 
+//ip--conn对应map
 var allconn = make(map[string]*websocket.Conn)
 var wsStatus = cmap.New()
 
 func DialWs(addr string) {
-	wsStatus.Set(addr, false)
+	host:=strings.Split(addr,":")[0]
+
+
+	wsStatus.Set(host, false)
 	for {
-		if status, ok := wsStatus.Get(addr); ok {
+		if status, ok := wsStatus.Get(host); ok {
 			tmp := status.(bool)
 			if !tmp {
 				u := url.URL{Scheme: "ws", Host: addr, Path: "/echo"}
 				c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 				if err != nil {
 					log.Printf("尝试连接节点ws通道%s失败,10s后重试:\n", addr)
-					panic(err)
-					wsStatus.Set(addr, false)
+					wsStatus.Set(host, false)
 					time.Sleep(10 * time.Second)
 					continue
 				}
-				wsStatus.Set(addr, true)
-				allconn[addr] = c
+				host:=strings.Split(u.Host,":")[0]
+				wsStatus.Set(host, true)
+				allconn[host] = c
 				fmt.Printf("已创建连接节点ws通道%s\n", addr)
 			}
 		}
@@ -54,7 +58,6 @@ func DialS5(listenTarget string) {
 		go Handshake(RemoteConn)
 	}
 }
-
 
 type Task struct {
 	Route string
@@ -77,23 +80,49 @@ func handel(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	//todo 往哪个连接发应解析业务逻辑
 	addr := p.Route
-	c := allconn[addr]
-
-	err = c.WriteJSON(p)
 	msg := "投送成功"
-	if err != nil {
-		fmt.Println("节点消息投送失败,触发重新连接节点")
-		//panic(err)
-		msg = "投送失败,触发重新连接节点"
-		//panic(err)
-		wsStatus.Set(addr, false)
-
+	if c, ok := allconn[addr]; ok {
+		err = c.WriteJSON(p)
+		if err != nil {
+			fmt.Println("节点消息投送失败,触发重新连接节点")
+			msg = "投送失败,触发重新连接节点"
+			wsStatus.Set(addr, false)
+		}
+	} else {
+		msg = fmt.Sprintf("未找到%s对应的socket连接", p.Route)
 	}
+
 	rv := rusult{
 		Code: 200,
 		Msg:  msg,
 	}
 	err = json.NewEncoder(w).Encode(rv)
+	if err != nil {
+		//... handle error
+		panic(err)
+	}
+
+}
+
+func staus(w http.ResponseWriter, r *http.Request)  {
+	rv:=make(map[string]string)
+	for k, v := range allconn {
+		rv[k]=v.LocalAddr().String()
+	}
+
+
+	err := json.NewEncoder(w).Encode(rv)
+	if err != nil {
+		//... handle error
+		panic(err)
+	}
+
+}
+
+
+
+func staus2(w http.ResponseWriter, r *http.Request)  {
+	err := json.NewEncoder(w).Encode(wsStatus)
 	if err != nil {
 		//... handle error
 		panic(err)
@@ -116,7 +145,9 @@ func DLocal(addrs []string) {
 		go DialS5(addr)
 	}
 
-	http.HandleFunc("/start", handel)
+	http.HandleFunc("/exectask", handel)
+	http.HandleFunc("/status", staus)
+	http.HandleFunc("/status2", staus2)
 	addr := strings.Join([]string{"localhost", ":", core.Web}, "")
 	log.Fatal(http.ListenAndServe(addr, nil))
 
