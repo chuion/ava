@@ -4,9 +4,11 @@ import (
 	"ava/core"
 	"fmt"
 	"github.com/gorilla/websocket"
-	"log"
+	"github.com/spf13/viper"
+
 	"net/http"
 	"strings"
+	"github.com/phuslu/log"
 )
 
 var upgrader = websocket.Upgrader{} // use default options
@@ -17,11 +19,29 @@ type Task struct {
 	Args  string `json:"args"`
 }
 
+type Launcher struct {
+
+
+}
+
+func initWorker() (config Launcher) {
+
+	viper.SetConfigName("launcher") // 设置配置文件名 (不带后缀)
+	viper.AddConfigPath(".")        // 第一个搜索路径
+	err := viper.ReadInConfig()     // 读取配置数据
+	if err != nil {
+		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	}
+	viper.Unmarshal(&config) // 将配置信息绑定到结构体上
+	fmt.Println(config)
+	return
+}
+
 func echo(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
-	fmt.Print("接到管理端ws接成功\n")
+	log.Debug().Msgf("接到管理端ws接成功\n")
 	if err != nil {
-		log.Print("upgrade:", err)
+		log.Debug().Msgf("upgrade:", err)
 		return
 	}
 	defer c.Close()
@@ -29,7 +49,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	for {
 		err := c.ReadJSON(&p)
 		if err != nil {
-			log.Println("readjson:", err)
+			log.Debug().Msgf("读取数据失败:", err)
 			break
 		}
 		//log.Printf("recv: %s", message)
@@ -44,9 +64,9 @@ func echo(w http.ResponseWriter, r *http.Request) {
 }
 
 func HLocal() {
-	addr:=strings.Join([]string{"0.0.0.0",":", core.WsPort} , "")
+	addr := strings.Join([]string{"0.0.0.0", ":", core.WsPort}, "")
 	go Socks5h()
 	http.HandleFunc("/echo", echo)
-	fmt.Printf("ws监听地址: %s \n", addr)
-	log.Fatal(http.ListenAndServe(addr, nil))
+	log.Debug().Msgf("ws监听地址: %s \n", addr)
+	http.ListenAndServe(addr, nil)
 }

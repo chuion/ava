@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/orcaman/concurrent-map"
-	"log"
+	"github.com/phuslu/log"
 	"net"
 	"net/http"
 	"net/url"
@@ -38,7 +38,7 @@ func DialWs(addr string) {
 				host:=strings.Split(u.Host,":")[0]
 				wsStatus.Set(host, true)
 				allconn[host] = c
-				fmt.Printf("已创建连接节点ws通道%s\n", addr)
+				log.Debug().Msgf("已创建连接节点ws通道%s\n", addr)
 			}
 		}
 
@@ -84,7 +84,7 @@ func handel(w http.ResponseWriter, r *http.Request) {
 	if c, ok := allconn[addr]; ok {
 		err = c.WriteJSON(p)
 		if err != nil {
-			fmt.Println("节点消息投送失败,触发重新连接节点")
+			log.Debug().Msgf("节点消息投送失败,触发重新连接节点")
 			msg = "投送失败,触发重新连接节点"
 			wsStatus.Set(addr, false)
 		}
@@ -149,6 +149,6 @@ func DLocal(addrs []string) {
 	http.HandleFunc("/status", staus)
 	http.HandleFunc("/status2", staus2)
 	addr := strings.Join([]string{"localhost", ":", core.Web}, "")
-	log.Fatal(http.ListenAndServe(addr, nil))
+	http.ListenAndServe(addr, nil)
 
 }

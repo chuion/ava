@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"log"
+	"github.com/phuslu/log"
 	"net"
 )
 
@@ -38,7 +38,7 @@ func Handshake(client net.Conn) {
 		case 0x01:
 			sip := sockIP{}
 			if err := binary.Read(bytes.NewReader(b[4:n]), binary.BigEndian, &sip); err != nil {
-				log.Println("请求解析错误")
+				log.Debug().Msgf("请求解析错误")
 				return
 			}
 			addr = sip.toAddr()
@@ -47,7 +47,7 @@ func Handshake(client net.Conn) {
 			var port uint16
 			err = binary.Read(bytes.NewReader(b[n-2:n]), binary.BigEndian, &port)
 			if err != nil {
-				log.Println(err)
+				log.Debug().Err(err)
 				return
 			}
 			addr = fmt.Sprintf("%s:%d", host, port)
