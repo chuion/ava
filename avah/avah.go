@@ -75,8 +75,10 @@ func echo(w http.ResponseWriter, r *http.Request) {
 }
 
 func HLocal() {
+	go listenForTcp()
+	go listenForClients()
+
 	addr := strings.Join([]string{"0.0.0.0", ":", core.WsPort}, "")
-	go Socks5h()
 	http.HandleFunc("/echo", echo)
 	log.Debug().Msgf("ws监听地址: %s \n", addr)
 	http.ListenAndServe(addr, nil)

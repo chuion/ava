@@ -15,15 +15,15 @@
 
 #### 2. 启动方式
 ##### 2.1 D的运行
-会监听本机4000端口用于接收web命令,连接多台硬编码的运行节点
+会监听本机4000端口用于接收web命令,连接多台运行节点
 
 ```bash
-go run main/main.go -m d
+main config.josn
 ```
 
 ##### 2.2 H的运行
-单主机调试时为模拟多台设备使用-addr监听不同端口,实际应是代码中写死各节点主机ip:固定端口
 
+H监听端口 websocket: 4560, tcp: 4561, socks5: 4562 
 ```bash
-go run main/main.go -m h -addr "localhost:8080"
+./main
 ```

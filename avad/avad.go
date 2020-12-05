@@ -7,7 +7,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/orcaman/concurrent-map"
 	"github.com/phuslu/log"
-	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -53,19 +52,6 @@ func DialWs(addr string) {
 	}
 }
 
-func DialS5(listenTarget string) {
-	var RemoteConn net.Conn
-	var err error
-	for {
-		for {
-			RemoteConn, err = net.Dial("tcp", listenTarget)
-			if err == nil {
-				break
-			}
-		}
-		go Handshake(RemoteConn)
-	}
-}
 
 type Task struct {
 	Route string
@@ -157,7 +143,7 @@ func DLocal(addrs []string) {
 	//连接内网穿透
 	for _, host := range addrs {
 		addr := strings.Join([]string{host, ":", core.TcpPort}, "")
-		go DialS5(addr)
+		go connectForSocks(addr)
 	}
 
 	http.HandleFunc("/exectask", handel)
