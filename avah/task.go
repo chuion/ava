@@ -1,7 +1,11 @@
 package avah
 
-import "ava/core"
+import (
+	"ava/core"
+	"fmt"
+)
 
-func taskrouter(p core.Task)  {
-	go Executor(p.Cmd, p.Args)
+func taskrouter(p core.TaskMsg)  {
+	//go Executor(p.Cmd, p.Args)
+	fmt.Printf("@@@",p)
 }

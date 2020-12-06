@@ -29,7 +29,7 @@ func ping() {
 	for {
 		select {
 		case <-ticker.C:
-			for host, ws := range allconn {
+			for host, ws := range wsConns {
 				ws.SetPongHandler(func(string) error { ws.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 				err := ws.WriteMessage(websocket.PingMessage, []byte{})
 				if err != nil {

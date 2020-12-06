@@ -11,8 +11,9 @@ type LauncherConf struct {
 	Command string `json:"command"`
 }
 
-type Task struct {
-	Route string `json:"route"`
-	Cmd   string `json:"cmd"`
-	Args  string `json:"args"`
+type TaskMsg struct {
+	Route  string `json:"route"`
+	Worker string `json:"worker"`
+	TaskID string `json:"task_id"`
+	Params string `json:"params"`
 }

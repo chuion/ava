@@ -12,20 +12,11 @@ import (
 )
 
 //ip--conn对应map
-var allconn = make(map[string]*websocket.Conn)
-var nodeTask = make(map[string]core.LauncherConf)
+var wsConns = make(map[string]*websocket.Conn)
 var wsStatus = cmap.New()
 var tcpStatus = cmap.New()
 
-func infoReg(host string, c *websocket.Conn) {
-	p := core.LauncherConf{}
-	err := c.ReadJSON(&p)
-	if err != nil {
-		log.Debug().Msgf("读取节点: %s注册信息失败", host)
-	}
-	log.Debug().Msgf("接收节点: %s注册信息成功,可运行%s", host, p.Worker)
-	nodeTask[host] = p
-}
+
 
 func dialWs(addr string) {
 	host := strings.Split(addr, ":")[0]
@@ -43,7 +34,7 @@ func dialWs(addr string) {
 			}
 			host := strings.Split(u.Host, ":")[0]
 			wsStatus.Set(host, true)
-			allconn[host] = c
+			wsConns[host] = c
 			log.Debug().Msgf("已创建连接节点ws通道%s\n", addr)
 			//读取注册信息
 			infoReg(host, c)
@@ -69,10 +60,10 @@ func DLocal(addrs []string) {
 		go connectForSocks(addrTcp)
 	}
 
-	http.HandleFunc("/exectask", taskrouter)
+	http.HandleFunc("/exectask", taskRouter)
 	http.HandleFunc("/webWsConns", webWsConns)
 	http.HandleFunc("/webWsStatus", webWsStatus)
-	http.HandleFunc("/webNodeTask", webNodeTask)
+	http.HandleFunc("/webWorkerMap", webWorkerMap)
 	http.HandleFunc("/webTcpStatus", webTcpStatus)
 	addr := strings.Join([]string{"localhost", ":", core.Web}, "")
 	http.ListenAndServe(addr, nil)

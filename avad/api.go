@@ -7,7 +7,7 @@ import (
 
 func webWsConns(w http.ResponseWriter, r *http.Request) {
 	rv := make(map[string]string)
-	for k, v := range allconn {
+	for k, v := range wsConns {
 		rv[k] = v.LocalAddr().String()
 	}
 
@@ -28,8 +28,8 @@ func webWsStatus(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func webNodeTask(w http.ResponseWriter, r *http.Request) {
-	err := json.NewEncoder(w).Encode(nodeTask)
+func webWorkerMap(w http.ResponseWriter, r *http.Request) {
+	err := json.NewEncoder(w).Encode(workerMap)
 	if err != nil {
 		//... handle error
 		panic(err)
