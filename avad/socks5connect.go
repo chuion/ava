@@ -35,7 +35,7 @@ func connectForSocks(address string) error {
 
 	for {
 		stream, err := session.Accept()
-		log.Debug().Msgf("Accepting stream")
+
 		if err != nil {
 			return err
 		}
