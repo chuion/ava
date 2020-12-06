@@ -75,8 +75,8 @@ func echo(w http.ResponseWriter, r *http.Request) {
 }
 
 func HLocal() {
-	go listenForTcp()
-	go listenForClients()
+
+	go listenForAgents()
 
 	addr := strings.Join([]string{"0.0.0.0", ":", core.WsPort}, "")
 	http.HandleFunc("/echo", echo)

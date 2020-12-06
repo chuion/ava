@@ -13,8 +13,7 @@ func Executor(name string, arg ...string) {
 	if err != nil {
 		log.Debug().Msgf("测试执行 failed %s\n", err)
 	}
-	log.Debug().Msgf("测试执行 标准输出: ", string(out))
+	log.Debug().Msgf("测试执行 标准输出: %s", string(out))
 
-	//pids <- cmd.Process.Pid
 
 }
