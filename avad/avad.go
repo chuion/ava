@@ -39,7 +39,7 @@ func dialWs(addr string) {
 			p := core.LauncherConf{}
 			err = c.ReadJSON(&p)
 			if err != nil {
-				log.Debug().Msgf("接收节点: %s注册信息失败", host)
+				log.Debug().Msgf("读取节点: %s注册信息失败", host)
 			}
 			log.Debug().Msgf("接收节点: %s注册信息成功,可运行%s", host, p.Worker)
 			nodeTask[host] = p
