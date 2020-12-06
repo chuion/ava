@@ -10,31 +10,24 @@ import (
 
 var upgrader = websocket.Upgrader{} // use default options
 
-
-func echo(w http.ResponseWriter, r *http.Request) {
+func dial(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Debug().Msgf("ws握手失败: %s", err)
 		return
 	}
-	reg(c)
-
+	infoReg(c)
 	defer c.Close()
-	p := Task{}
+
+	p := core.Task{}
 	for {
 		err := c.ReadJSON(&p)
 		if err != nil {
 			log.Debug().Msgf("读取数据失败:", err)
 			break
 		}
-		//log.Printf("recv: %s", message)
-
-		go Executor(p.Cmd, p.Args)
-		//err = c.WriteMessage(mt, message)
-		//if err != nil {
-		//	log.Println("write:", err)
-		//	break
-		//}
+		//接收信息,给到路由分发
+		taskrouter(p)
 	}
 }
 
@@ -43,7 +36,7 @@ func HLocal() {
 	go listenForAgents()
 
 	addr := strings.Join([]string{"0.0.0.0", ":", core.WsPort}, "")
-	http.HandleFunc("/echo", echo)
+	http.HandleFunc("/ws", dial)
 	log.Debug().Msgf("ws监听地址: %s \n", addr)
 	http.ListenAndServe(addr, nil)
 }

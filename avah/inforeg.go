@@ -8,11 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type Task struct {
-	Route string `json:"route"`
-	Cmd   string `json:"cmd"`
-	Args  string `json:"args"`
-}
+
 
 func initWorker() (config core.LauncherConf) {
 
@@ -27,7 +23,7 @@ func initWorker() (config core.LauncherConf) {
 	return
 }
 
-func reg(c *websocket.Conn) {
+func infoReg(c *websocket.Conn) {
 	log.Debug().Msgf("接到管理端ws连接成功,开始注册/更新业务功能\n")
 	config := initWorker()
 	err := c.WriteJSON(config)

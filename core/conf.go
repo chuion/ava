@@ -10,3 +10,9 @@ type LauncherConf struct {
 	Worker  string `json:"worker"`
 	Command string `json:"command"`
 }
+
+type Task struct {
+	Route string `json:"route"`
+	Cmd   string `json:"cmd"`
+	Args  string `json:"args"`
+}

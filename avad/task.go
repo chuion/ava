@@ -18,8 +18,7 @@ type rusult struct {
 	Msg  string
 }
 
-
-func handel(w http.ResponseWriter, r *http.Request) {
+func taskrouter(w http.ResponseWriter, r *http.Request) {
 	var p Task
 	err := json.NewDecoder(r.Body).Decode(&p)
 	if err != nil {
@@ -35,7 +34,6 @@ func handel(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Debug().Msgf("投送失败,节点可能已不在线")
 			msg = "投送失败,节点可能已不在线"
-
 		}
 	} else {
 		msg = fmt.Sprintf("未找到%s对应的socket连接", p.Route)
