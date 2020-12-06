@@ -36,23 +36,28 @@ func connectForSocks(address string) {
 					panic(err)
 
 				}
-				for {
-					stream, err := session.Accept()
-					if err != nil {
-						log.Debug().Msgf("公网节点无法连接%s可能已经关闭", host)
-						break
-					}
-					log.Debug().Msgf("Passing off to socks5")
-					go func() {
-						err = server.ServeConn(stream)
-						if err != nil {
-							log.Debug().Err(err)
-
-						}
-					}()
-				}
+				relay(host, session, server)
 			}
 
 		}
 	}
+}
+
+func relay(host string, session *yamux.Session, server *socks5.Server) {
+	for {
+		stream, err := session.Accept()
+		if err != nil {
+			log.Debug().Msgf("公网节点无法连接%s可能已经关闭", host)
+			break
+		}
+		log.Debug().Msgf("Passing off to socks5")
+		go func() {
+			err = server.ServeConn(stream)
+			if err != nil {
+				log.Debug().Err(err)
+
+			}
+		}()
+	}
+
 }

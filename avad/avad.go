@@ -16,8 +16,6 @@ var wsConns = make(map[string]*websocket.Conn)
 var wsStatus = cmap.New()
 var tcpStatus = cmap.New()
 
-
-
 func dialWs(addr string) {
 	host := strings.Split(addr, ":")[0]
 
