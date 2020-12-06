@@ -24,11 +24,11 @@ func listenForAgents() {
 	var err, erry error
 
 	var ln net.Listener
-	log.Printf("Listening for agents on %s", address)
+	log.Debug().Msgf("Listening for agents on %s", address)
 	ln, err = net.Listen("tcp", address)
 
 	if err != nil {
-		log.Printf("Error listening on %s: %v", address, err)
+		log.Debug().Msgf("Error listening on %s: %v", address, err)
 	}
 
 	for {
@@ -41,14 +41,14 @@ func listenForAgents() {
 		//defer conn.Close()
 
 		agentStr := conn.RemoteAddr().String()
-		log.Printf("[%s] Got a connection from %v: ", agentStr, conn.RemoteAddr())
+		log.Debug().Msgf("[%s] Got a connection from %v: ", agentStr, conn.RemoteAddr())
 		//_ = conn.SetReadDeadline(time.Now().Add(proxytout))
 		//conn.SetReadDeadline(time.Now().Add(100 * time.Hour))
 
 		//Add connection to yamux
 		session, erry = yamux.Client(conn, nil)
 		if erry != nil {
-			log.Printf("[%s] Error creating client in yamux for %s: %v", agentStr, conn.RemoteAddr(), erry)
+			log.Debug().Msgf("[%s] Error creating client in yamux for %s: %v", agentStr, conn.RemoteAddr(), erry)
 		}
 
 		go listenForClients(agentStr)
@@ -65,7 +65,7 @@ func listenForClients(agentStr string) error {
 	address := strings.Join([]string{"0.0.0.0", ":", core.SocksPort}, "")
 
 	if !lis {
-		log.Printf("[%s] Waiting for clients on %s", agentStr, address)
+		log.Debug().Msgf("[%s] Waiting for clients on %s", agentStr, address)
 		socksListen, err = net.Listen("tcp", address)
 		if err != nil {
 			_, _ = fmt.Fprintf(os.Stderr, "Errors accepting!")
@@ -75,21 +75,20 @@ func listenForClients(agentStr string) error {
 
 	for {
 		conn, err := socksListen.Accept()
-		log.Printf("接到代理请求")
 		if err != nil {
-			log.Printf("[%s] Error accepting on %s: %v", agentStr, address, err)
+			log.Debug().Msgf("[%s] Error accepting on %s: %v", agentStr, address, err)
 			return err
 		}
 		if session == nil {
-			log.Printf("[%s] Session on %s is nil", agentStr, address)
+			log.Debug().Msgf("[%s] Session on %s is nil", agentStr, address)
 			conn.Close()
 			continue
 		}
-		log.Printf("[%s] Got client. Opening stream for %s", agentStr, conn.RemoteAddr())
+		log.Debug().Msgf("[%s] Got client. Opening stream for %s", agentStr, conn.RemoteAddr())
 
 		stream, err := session.Open()
 		if err != nil {
-			log.Printf("[%s] Error opening stream for %s: %v", agentStr, conn.RemoteAddr(), err)
+			log.Debug().Msgf("[%s] Error opening stream for %s: %v", agentStr, conn.RemoteAddr(), err)
 			_ = session.Close()
 
 			return err
