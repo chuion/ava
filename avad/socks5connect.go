@@ -9,22 +9,17 @@ import (
 	"time"
 )
 
-func connectForSocks(address string) error {
+func connectForSocks(address string) {
 	var session *yamux.Session
-	server, err := socks5.New(&socks5.Config{})
-	if err != nil {
-		return err
-	}
+	server, _ := socks5.New(&socks5.Config{})
 	host := strings.Split(address, ":")[0]
 	tcpStatus.Set(host, false)
-	var conn net.Conn
 
 	for {
 		status, _ := tcpStatus.Get(host)
-
 		if !status.(bool) {
 			for {
-				conn, err = net.Dial("tcp", address)
+				conn, err := net.Dial("tcp", address)
 				if err != nil {
 					log.Debug().Msgf("连接远端tcp通道 %s失败,%s后重试", address, pongWait)
 					time.Sleep(pongWait)
@@ -38,12 +33,13 @@ func connectForSocks(address string) error {
 				if err != nil {
 					//todo 这里的处理好像还有坑
 					session.Close()
-					return err
+					panic(err)
+
 				}
 				for {
 					stream, err := session.Accept()
 					if err != nil {
-						log.Debug().Msgf("公网节点无法连接%s可能已经关闭",host)
+						log.Debug().Msgf("公网节点无法连接%s可能已经关闭", host)
 						break
 					}
 					log.Debug().Msgf("Passing off to socks5")
@@ -59,7 +55,4 @@ func connectForSocks(address string) error {
 
 		}
 	}
-
 }
-
-
