@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func init()  {
+func init() {
 
 	if log.IsTerminal(os.Stderr.Fd()) {
 		log.DefaultLogger = log.Logger{
@@ -22,7 +22,6 @@ func init()  {
 	}
 
 }
-
 
 func main() {
 

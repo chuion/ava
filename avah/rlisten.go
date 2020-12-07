@@ -59,7 +59,6 @@ func listenForAgents() {
 
 // Catches local clients and connects to yamux
 
-
 func listenForClients(agentStr string) error {
 	var err error
 	address := strings.Join([]string{"0.0.0.0", ":", core.SocksPort}, "")

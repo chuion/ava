@@ -1,7 +1,7 @@
 package avad
 
 import (
-	socks5 "github.com/armon/go-socks5"
+	"ava/core/go-socks5"
 	"github.com/hashicorp/yamux"
 	"github.com/phuslu/log"
 	"net"

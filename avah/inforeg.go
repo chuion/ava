@@ -3,12 +3,10 @@ package avah
 import (
 	"ava/core"
 	"fmt"
+	"github.com/gorilla/websocket"
 	"github.com/phuslu/log"
 	"github.com/spf13/viper"
-	"github.com/gorilla/websocket"
 )
-
-
 
 func initWorker() (config core.LauncherConf) {
 

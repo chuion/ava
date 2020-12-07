@@ -2,9 +2,10 @@ package avad
 
 import (
 	"ava/core"
-	"github.com/phuslu/log"
 	"github.com/gorilla/websocket"
+	"github.com/phuslu/log"
 )
+
 var workerMap = make(map[string]string)
 var workerMapR = make(map[string]string)
 var workerCommand = make(map[string]string)

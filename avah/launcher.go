@@ -13,22 +13,22 @@ func executor(command, arg string) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	cmdStr := strings.Join([]string{command, " ", arg}, "")
-	script:=strings.Split(command," ")
+	script := strings.Split(command, " ")
 	log.Debug().Msgf("启动器接到命令: %s\n", cmdStr)
 	cmd := exec.CommandContext(ctx, script[0], script[1], arg)
 	//cmd.Dir = "/usr/bin"
 
 	err := cmd.Start()
-	out, err := cmd.CombinedOutput()
+	//out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Debug().Msgf("测试执行 failed %s\n", err)
 	}
-	log.Debug().Msgf("测试执行 标准输出: %s", out)
+	//log.Debug().Msgf("测试执行 标准输出: %s", out)
 
 	go func() {
 		cmd.Wait()
 		cancel()
-		log.Debug().Msgf("进程 task_id: %s 自动退出")
+		log.Debug().Msgf("任务: %s执行完成,退出", cmdStr)
 	}()
 
 }
