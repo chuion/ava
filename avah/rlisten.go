@@ -22,7 +22,6 @@ func listenForAgents() {
 	address := strings.Join([]string{"0.0.0.0", ":", core.TcpPort}, "")
 
 	var err, erry error
-
 	var ln net.Listener
 	log.Debug().Msgf("Listening for agents on %s", address)
 	ln, err = net.Listen("tcp", address)
@@ -33,7 +32,6 @@ func listenForAgents() {
 
 	for {
 		conn, err := ln.Accept()
-
 		if err != nil {
 			_, _ = fmt.Fprintf(os.Stderr, "Errors accepting!")
 			return

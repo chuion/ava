@@ -18,7 +18,6 @@ func dial(w http.ResponseWriter, r *http.Request) {
 	}
 	infoReg(c)
 	defer c.Close()
-
 	p := core.TaskMsg{}
 	for {
 		err := c.ReadJSON(&p)

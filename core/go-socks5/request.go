@@ -123,7 +123,7 @@ func (s *Server) handleRequest(req *Request, conn conn) error {
 	dest := req.DestAddr
 	if dest.FQDN != "" {
 
-		fmt.Printf("内网穿透访问域名 %s\n",dest.FQDN)
+		fmt.Printf("内网穿透访问域名 %s\n", dest.FQDN)
 		ctx_, addr, err := s.config.Resolver.Resolve(ctx, dest.FQDN)
 		if err != nil {
 			if err := sendReply(conn, hostUnreachable, nil); err != nil {
@@ -131,7 +131,7 @@ func (s *Server) handleRequest(req *Request, conn conn) error {
 			}
 			return fmt.Errorf("Failed to resolve destination '%v': %v", dest.FQDN, err)
 		}
-		fmt.Printf("内网穿透访问ip %s\n",addr)
+		fmt.Printf("内网穿透访问ip %s\n", addr)
 		ctx = ctx_
 		dest.IP = addr
 	}

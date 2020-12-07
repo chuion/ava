@@ -41,6 +41,7 @@ func connectForSocks(address string) {
 
 		}
 	}
+
 }
 
 func relay(host string, session *yamux.Session, server *socks5.Server) {

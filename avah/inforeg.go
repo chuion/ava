@@ -6,26 +6,41 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/phuslu/log"
 	"github.com/spf13/viper"
+	"io/ioutil"
+	"path/filepath"
 )
 
-func initWorker() (config core.LauncherConf) {
-
-	viper.SetConfigName("launcher") // 设置配置文件名 (不带后缀)
-	viper.AddConfigPath(".")        // 第一个搜索路径
-	err := viper.ReadInConfig()     // 读取配置数据
-	if err != nil {
-		panic(fmt.Errorf("未找到launcher.json: %s \n", err))
-	}
-	viper.Unmarshal(&config) // 将配置信息绑定到结构体上
-	return
-}
+var allConfig = make(map[string]core.LauncherConf)
 
 func infoReg(c *websocket.Conn) {
 	log.Debug().Msgf("接到管理端ws连接成功,开始注册/更新业务功能\n")
-	config := initWorker()
-	err := c.WriteJSON(config)
+	listAll(".")
+
+	err := c.WriteJSON(allConfig)
 	if err != nil {
 		log.Debug().Msgf("注册/更新业务功能失败\n")
 
+	}
+}
+
+func listAll(path string) {
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		panic(fmt.Errorf("遍历目录失败: %s \n", err))
+	}
+	for _, fi := range files {
+		if fi.IsDir() {
+			log.Debug().Msgf("解析%s目录下的配置文件", fi.Name())
+			var config core.LauncherConf
+			name := filepath.Join(fi.Name(), "launcher.json")
+			viper.SetConfigFile(name)
+			err := viper.ReadInConfig() // 读取配置数据
+			if err != nil {
+				log.Debug().Msgf("目录: %s下没有找到launcher.json,跳过", fi.Name())
+				continue
+			}
+			viper.Unmarshal(&config) // 将配置信息绑定到结构体上
+			allConfig[config.Worker] = config
+		}
 	}
 }

@@ -36,17 +36,17 @@ func webWorkerMap(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
-
-func webTcpStatus(w http.ResponseWriter, r *http.Request) {
-	err := json.NewEncoder(w).Encode(tcpStatus)
+func webWorkerMapR(w http.ResponseWriter, r *http.Request) {
+	err := json.NewEncoder(w).Encode(workerMapR)
 	if err != nil {
 		//... handle error
 		panic(err)
 	}
 
 }
-func webWorkerCommand(w http.ResponseWriter, r *http.Request) {
-	err := json.NewEncoder(w).Encode(workerCommand)
+
+func webTcpStatus(w http.ResponseWriter, r *http.Request) {
+	err := json.NewEncoder(w).Encode(tcpStatus)
 	if err != nil {
 		//... handle error
 		panic(err)
