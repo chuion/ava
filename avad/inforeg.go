@@ -7,6 +7,7 @@ import (
 )
 var workerMap = make(map[string]string)
 var workerMapR = make(map[string]string)
+var workerCommand = make(map[string]string)
 
 func infoReg(host string, c *websocket.Conn) {
 	p := core.LauncherConf{}
@@ -17,5 +18,6 @@ func infoReg(host string, c *websocket.Conn) {
 	log.Debug().Msgf("接收节点: %s注册信息成功,可运行%s", host, p.Worker)
 	workerMap[p.Worker] = host
 	workerMapR[host] = p.Worker
+	workerCommand[p.Worker] = p.Command
 
 }

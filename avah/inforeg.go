@@ -19,7 +19,6 @@ func initWorker() (config core.LauncherConf) {
 		panic(fmt.Errorf("未找到launcher.json: %s \n", err))
 	}
 	viper.Unmarshal(&config) // 将配置信息绑定到结构体上
-	//fmt.Println(config)
 	return
 }
 

@@ -63,6 +63,7 @@ func DLocal(addrs []string) {
 	http.HandleFunc("/webWsStatus", webWsStatus)
 	http.HandleFunc("/webWorkerMap", webWorkerMap)
 	http.HandleFunc("/webTcpStatus", webTcpStatus)
+	http.HandleFunc("/webWorkerCommand", webWorkerCommand)
 	addr := strings.Join([]string{"localhost", ":", core.Web}, "")
 	http.ListenAndServe(addr, nil)
 

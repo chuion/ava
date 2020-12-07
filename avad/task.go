@@ -9,8 +9,6 @@ import (
 	"net/http"
 )
 
-
-
 type rusult struct {
 	Code int
 	Msg  string
@@ -27,7 +25,7 @@ func taskRouter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if p.Route != "" {
-		log.Debug().Msgf("接到 %s的定点任务",p.Route)
+		log.Debug().Msgf("接到 %s的定点任务", p.Route)
 		code, msg := send(p.Route, p)
 		json.NewEncoder(w).Encode(&rusult{code, msg})
 		return
@@ -62,12 +60,15 @@ func nodeAvailable(host string) (conn *websocket.Conn, err error) {
 func send(host string, p core.TaskMsg) (code int, msg string) {
 	conn, err := nodeAvailable(host)
 	if conn != nil {
+		p.Command = workerCommand[p.Worker] //补充上command
+
+		log.Debug().Msgf("发送前原始参数: %s", p)
 		err = conn.WriteJSON(p)
 		if err != nil {
-			log.Debug().Msgf("投送失败,节点: %s可能已不在线",host)
+			log.Debug().Msgf("投送失败,节点: %s可能已不在线", host)
 			return 400, "投送失败,节点可能已不在线"
 		}
-		return 200, fmt.Sprintf("投送到: %s成功",host)
+		return 200, fmt.Sprintf("投送到: %s成功", host)
 
 	} else {
 		return 200, fmt.Sprintf("%s", err)

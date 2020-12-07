@@ -2,10 +2,12 @@ package avah
 
 import (
 	"ava/core"
-	"fmt"
+	"github.com/phuslu/log"
 )
 
-func taskrouter(p core.TaskMsg)  {
-	//go Executor(p.Cmd, p.Args)
-	fmt.Printf("@@@",p)
+func taskrouter(p core.TaskMsg) {
+	log.Debug().Msgf("接收到的原始参数: %s", p)
+	go executor(p.Command, p.Params)
+
+
 }

@@ -1,3 +1,3 @@
 import time
-print("我是python程序的标准输出")
+print("this python stdout!!!")
 time.sleep(2)

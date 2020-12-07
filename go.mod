@@ -8,5 +8,6 @@ require (
 	github.com/hashicorp/yamux v0.0.0-20200609203250-aecfd211c9ce
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
 	github.com/phuslu/log v1.0.54
+	github.com/ramr/go-reaper v0.2.0
 	github.com/spf13/viper v1.7.1
 )

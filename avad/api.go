@@ -45,3 +45,11 @@ func webTcpStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+func webWorkerCommand(w http.ResponseWriter, r *http.Request) {
+	err := json.NewEncoder(w).Encode(workerCommand)
+	if err != nil {
+		//... handle error
+		panic(err)
+	}
+
+}
