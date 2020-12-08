@@ -47,10 +47,7 @@ func DLocal(addrs []string) {
 	go ping()
 
 	for _, host := range addrs {
-		addrWs := strings.Join([]string{host, ":", core.WsPort}, "")
-		addrTcp := strings.Join([]string{host, ":", core.TcpPort}, "")
-		go dialWs(addrWs)
-		go connectForSocks(addrTcp)
+		reconnect(host)
 	}
 
 	http.HandleFunc("/exectask", taskRouter)

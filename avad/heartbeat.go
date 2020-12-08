@@ -51,12 +51,8 @@ func ping() {
 }
 
 func reconnect(host string)  {
-	wsStatus.Set(host, false)
-	tcpStatus.Set(host, false)
 	addrWs := strings.Join([]string{host, ":", core.WsPort}, "")
 	addrTcp := strings.Join([]string{host, ":", core.TcpPort}, "")
 	go dialWs(addrWs)
 	go connectForSocks(addrTcp)
-
-
 }
