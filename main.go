@@ -3,6 +3,7 @@ package main
 import (
 	"ava/avad"
 	"ava/avah"
+	"ava/core"
 	"github.com/phuslu/log"
 	"github.com/spf13/viper"
 	baseLog "log"
@@ -56,6 +57,7 @@ func LoadConfig(config string) []string {
 		os.Exit(1)
 	}
 	nodes := viper.GetStringSlice("nodes")
+	core.Sites = viper.GetStringSlice("sites")
 
 	return nodes
 }

@@ -21,3 +21,6 @@ type TaskMsg struct {
 }
 
 const PongWait = 20 * time.Second
+
+//白名单
+var Sites []string
