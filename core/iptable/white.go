@@ -9,19 +9,22 @@ import (
 var allList []string
 
 func init() {
+	if len(os.Args) != 2 {
+		return
+	}
 	viper.SetConfigFile("allow.json")
 	err := viper.ReadInConfig()
 	if err != nil {
 		log.Debug().Msgf("白名单配置文件读取失败: %s\n", err)
-		os.Exit(1)
+		return
 	}
 	allList = viper.GetStringSlice("sites")
+	log.Debug().Msgf("白名单配置文件读取成功")
 }
 
 func Allow(dst string) bool {
 	if !stringInSlice(dst, allList) {
 		return false
-
 	}
 	return true
 }
