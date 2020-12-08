@@ -21,11 +21,11 @@ func infoReg(host string, c *websocket.Conn) {
 	}
 
 	//去重配置
-	for k,v:=range workerMap{
-		workerMap[k]=RemoveRepeatedElement(v)
+	for k, v := range workerMap {
+		workerMap[k] = RemoveRepeatedElement(v)
 	}
-	for k,v:=range workerMapR{
-		workerMapR[k]=RemoveRepeatedElement(v)
+	for k, v := range workerMapR {
+		workerMapR[k] = RemoveRepeatedElement(v)
 	}
 }
 

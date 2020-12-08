@@ -21,4 +21,3 @@ type TaskMsg struct {
 }
 
 const PongWait = 20 * time.Second
-

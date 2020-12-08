@@ -52,7 +52,7 @@ func taskRouter(w http.ResponseWriter, r *http.Request) {
 		host := hosts[t]
 		log.Debug().Msgf("任务: %s在节点 %s都有部署,随机投送到: %s执行", p.Route, hosts, host)
 		code, msg := send(host, p)
-		msg = fmt.Sprintf("任务%s在%s都有部署,随机%s",p.Worker,hosts, msg)
+		msg = fmt.Sprintf("任务%s在%s都有部署,随机%s", p.Worker, hosts, msg)
 		json.NewEncoder(w).Encode(&result{code, msg})
 		return
 	}

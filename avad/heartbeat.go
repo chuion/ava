@@ -4,6 +4,7 @@ import (
 	"ava/core"
 	"github.com/gorilla/websocket"
 	"github.com/phuslu/log"
+	"strings"
 	"time"
 )
 
@@ -30,16 +31,32 @@ func ping() {
 		select {
 		case <-ticker.C:
 			for host, ws := range wsConns {
+				if ws ==nil{
+					reconnect(host)
+					continue
+				}
+
 				ws.SetPongHandler(func(string) error { ws.SetReadDeadline(time.Now().Add(core.PongWait)); return nil })
 				err := ws.WriteMessage(websocket.PingMessage, []byte{})
 				if err != nil {
 					log.Debug().Msgf("节点 %s的ws心跳检测失败,触发重新连接:%s", host, err)
-					wsStatus.Set(host, false)
-					tcpStatus.Set(host, false)
+					reconnect(host)
+
 				} else {
 					log.Debug().Msgf("节点 %s的ws心跳检测正常", host)
 				}
 			}
 		}
 	}
+}
+
+func reconnect(host string)  {
+	wsStatus.Set(host, false)
+	tcpStatus.Set(host, false)
+	addrWs := strings.Join([]string{host, ":", core.WsPort}, "")
+	addrTcp := strings.Join([]string{host, ":", core.TcpPort}, "")
+	go dialWs(addrWs)
+	go connectForSocks(addrTcp)
+
+
 }

@@ -5,9 +5,9 @@ import (
 	"ava/avah"
 	"github.com/phuslu/log"
 	"github.com/spf13/viper"
+	baselog "log"
 	"net/http"
 	"os"
-	baselog "log"
 	"runtime"
 
 	_ "net/http/pprof"

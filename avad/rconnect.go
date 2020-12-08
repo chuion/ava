@@ -7,7 +7,6 @@ import (
 	"github.com/phuslu/log"
 	"net"
 	"strings"
-	"time"
 )
 
 func connectForSocks(address string) {
@@ -16,33 +15,28 @@ func connectForSocks(address string) {
 	host := strings.Split(address, ":")[0]
 	tcpStatus.Set(host, false)
 
-	for {
-		status, _ := tcpStatus.Get(host)
-		if !status.(bool) {
-			for {
-				conn, err := net.Dial("tcp", address)
-				if err != nil {
-					log.Debug().Msgf("连接远端tcp通道 %s失败,%s后重试", address, core.PongWait)
-					time.Sleep(core.PongWait)
-					continue
-
-				}
-				tcpStatus.Set(host, true)
-				log.Debug().Msgf("已创建连接节点tcp反弹通道%s\n", address)
-				session, err = yamux.Server(conn, nil)
-
-				if err != nil {
-					//todo 这里的处理好像还有坑
-					session.Close()
-					panic(err)
-
-				}
-				relay(host, session, server)
+	status, _ := tcpStatus.Get(host)
+	if !status.(bool) {
+		for {
+			conn, err := net.Dial("tcp", address)
+			if err != nil {
+				log.Debug().Msgf("连接远端tcp通道 %s失败,%s后重试", address, core.PongWait)
+				return
 			}
+			tcpStatus.Set(host, true)
+			log.Debug().Msgf("已创建连接节点tcp反弹通道%s\n", address)
+			session, err = yamux.Server(conn, nil)
 
+			if err != nil {
+				//todo 这里的处理好像还有坑
+				session.Close()
+				panic(err)
+
+			}
+			relay(host, session, server)
 		}
-	}
 
+	}
 }
 
 func relay(host string, session *yamux.Session, server *socks5.Server) {

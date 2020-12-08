@@ -8,38 +8,32 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 )
 
 //ip--conn对应map
 var wsConns = make(map[string]*websocket.Conn)
+
 var wsStatus = cmap.New()
 var tcpStatus = cmap.New()
 
 func dialWs(addr string) {
 	host := strings.Split(addr, ":")[0]
-
 	wsStatus.Set(host, false)
-	for {
-		status, _ := wsStatus.Get(host)
-		if !status.(bool) {
-			u := url.URL{Scheme: "ws", Host: addr, Path: "/ws"}
-			c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
-			if err != nil {
-				log.Debug().Msgf("尝试连接节点ws通道%s失败,%s后重试:\n", addr, core.PongWait)
-				time.Sleep(core.PongWait)
-				continue
-			}
-			host := strings.Split(u.Host, ":")[0]
-			wsStatus.Set(host, true)
-			wsConns[host] = c
-			log.Debug().Msgf("已创建连接节点ws通道%s\n", addr)
-			//读取注册信息
-			infoReg(host, c)
-
+	status, _ := wsStatus.Get(host)
+	if !status.(bool) {
+		u := url.URL{Scheme: "ws", Host: addr, Path: "/ws"}
+		c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+		if err != nil {
+			log.Debug().Msgf("尝试连接节点ws通道%s失败,%s后重试:\n", addr, core.PongWait)
+			return
 		}
+		host := strings.Split(u.Host, ":")[0]
+		wsStatus.Set(host, true)
+		wsConns[host] = c
+		log.Debug().Msgf("已创建连接节点ws通道%s\n", addr)
+		//读取注册信息
+		infoReg(host, c)
 	}
-
 }
 
 func DLocal(addrs []string) {
@@ -47,6 +41,7 @@ func DLocal(addrs []string) {
 	for _, host := range addrs {
 		tcpStatus.Set(host, false)
 		wsStatus.Set(host, false)
+		wsConns[host] = nil
 	}
 
 	go ping()
