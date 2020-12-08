@@ -5,6 +5,10 @@ import (
 )
 
 func Allow(dst string) bool {
+	if len(core.Sites) == 0 {
+		return true
+	}
+
 	if !stringInSlice(dst, core.Sites) {
 		return false
 	}
