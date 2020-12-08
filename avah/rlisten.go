@@ -81,7 +81,7 @@ func listenForClients(agentStr string) error {
 			conn.Close()
 			continue
 		}
-		log.Debug().Msgf("[%s] Got client. Opening stream for %s", agentStr, conn.RemoteAddr())
+		//log.Debug().Msgf("[%s] Got client. Opening stream for %s", agentStr, conn.RemoteAddr())
 
 		stream, err := session.Open()
 		if err != nil {

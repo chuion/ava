@@ -17,9 +17,9 @@ func executor(command, arg, dir string) {
 	filename := fileConfig(dir, arg)
 
 	script := strings.Split(command, " ")
-	log.Debug().Msgf("启动器接到命令: %s %s %s %s\n", script[0], script[1],"placeholder",filename)
+	log.Debug().Msgf("启动器接到命令: %s %s %s %s\n", script[0], script[1], "placeholder", filename)
 
-	cmd := exec.CommandContext(ctx, script[0], script[1],"placeholder",filename)
+	cmd := exec.CommandContext(ctx, script[0], script[1], "placeholder", filename)
 	cmd.Dir = dir
 
 	out, err := cmd.CombinedOutput()

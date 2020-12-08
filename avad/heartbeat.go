@@ -31,7 +31,7 @@ func ping() {
 		select {
 		case <-ticker.C:
 			for host, ws := range wsConns {
-				if ws ==nil{
+				if ws == nil {
 					reconnect(host)
 					continue
 				}
@@ -50,7 +50,7 @@ func ping() {
 	}
 }
 
-func reconnect(host string)  {
+func reconnect(host string) {
 	addrWs := strings.Join([]string{host, ":", core.WsPort}, "")
 	addrTcp := strings.Join([]string{host, ":", core.TcpPort}, "")
 	go dialWs(addrWs)

@@ -44,6 +44,8 @@ func relay(host string, session *yamux.Session, server *socks5.Server) {
 		stream, err := session.Accept()
 		if err != nil {
 			log.Debug().Msgf("公网节点无法连接%s可能已经关闭", host)
+			wsStatus.Set(host,false)
+			tcpStatus.Set(host,false)
 			break
 		}
 		log.Debug().Msgf("Passing off to socks5")
