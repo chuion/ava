@@ -1,6 +1,7 @@
 package socks5
 
 import (
+	"ava/core/iptable"
 	"fmt"
 	"io"
 	"net"
@@ -121,9 +122,15 @@ func (s *Server) handleRequest(req *Request, conn conn) error {
 
 	// Resolve the address if we have a FQDN
 	dest := req.DestAddr
+
 	if dest.FQDN != "" {
 
-		fmt.Printf("内网穿透访问域名 %s\n", dest.FQDN)
+		fmt.Printf("内网穿透访问域名 %s %d\n", dest.FQDN, dest.Port)
+		dstName := dest.FQDN
+		if !iptable.Allow(dstName) {
+			return fmt.Errorf("目标地址: %s不允许访问", dstName)
+		}
+
 		ctx_, addr, err := s.config.Resolver.Resolve(ctx, dest.FQDN)
 		if err != nil {
 			if err := sendReply(conn, hostUnreachable, nil); err != nil {
@@ -131,13 +138,19 @@ func (s *Server) handleRequest(req *Request, conn conn) error {
 			}
 			return fmt.Errorf("Failed to resolve destination '%v': %v", dest.FQDN, err)
 		}
-		fmt.Printf("内网穿透访问ip %s\n", addr)
 		ctx = ctx_
 		dest.IP = addr
 	}
 
 	// Apply any address rewrites
 	req.realDestAddr = req.DestAddr
+	fmt.Printf("内网穿透访问ip %s %d\n", req.DestAddr.IP, req.DestAddr.Port)
+
+	dstName := req.DestAddr.IP.String()
+	if !iptable.Allow(dstName) {
+		return fmt.Errorf("目标地址: %s不允许访问", dstName)
+	}
+
 	if s.config.Rewriter != nil {
 		ctx, req.realDestAddr = s.config.Rewriter.Rewrite(ctx, req)
 	}
