@@ -1,6 +1,7 @@
 package avad
 
 import (
+	"ava/core"
 	"github.com/gorilla/websocket"
 	"github.com/phuslu/log"
 	"time"
@@ -14,10 +15,9 @@ const (
 	maxMessageSize = 8192
 
 	// Time allowed to read the next pong message from the peer.
-	pongWait = 15 * time.Second
 
-	// Send pings to peer with this period. Must be less than pongWait.
-	pingPeriod = (pongWait * 9) / 10
+	// Send pings to peer with this period. Must be less than PongWait.
+	pingPeriod = (core.PongWait * 9) / 10
 
 	// Time to wait before force close on connection.
 	closeGracePeriod = 10 * time.Second
@@ -30,7 +30,7 @@ func ping() {
 		select {
 		case <-ticker.C:
 			for host, ws := range wsConns {
-				ws.SetPongHandler(func(string) error { ws.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+				ws.SetPongHandler(func(string) error { ws.SetReadDeadline(time.Now().Add(core.PongWait)); return nil })
 				err := ws.WriteMessage(websocket.PingMessage, []byte{})
 				if err != nil {
 					log.Debug().Msgf("节点 %s的ws心跳检测失败,触发重新连接:%s", host, err)

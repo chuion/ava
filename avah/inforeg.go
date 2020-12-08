@@ -32,7 +32,7 @@ func listAll(path string) {
 		if fi.IsDir() {
 			log.Debug().Msgf("解析%s目录下的配置文件", fi.Name())
 			var config core.LauncherConf
-			name := filepath.Join(fi.Name(), "launcher.json")
+			name := filepath.Join(fi.Name(), "launcher1.json")
 			viper.SetConfigFile(name)
 			err := viper.ReadInConfig() // 读取配置数据
 			if err != nil {

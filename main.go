@@ -5,7 +5,12 @@ import (
 	"ava/avah"
 	"github.com/phuslu/log"
 	"github.com/spf13/viper"
+	"net/http"
 	"os"
+	baselog "log"
+	"runtime"
+
+	_ "net/http/pprof"
 )
 
 func init() {
@@ -24,6 +29,12 @@ func init() {
 }
 
 func main() {
+	runtime.GOMAXPROCS(1)
+	runtime.SetMutexProfileFraction(1)
+	runtime.SetBlockProfileRate(1)
+	go func() {
+		baselog.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 
 	if len(os.Args) > 1 {
 		log.Debug().Msgf("程序启动以管理模式运行,配置文件为: %s\n", os.Args[1])

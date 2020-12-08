@@ -1,6 +1,7 @@
 package avad
 
 import (
+	"ava/core"
 	"ava/core/go-socks5"
 	"github.com/hashicorp/yamux"
 	"github.com/phuslu/log"
@@ -21,8 +22,8 @@ func connectForSocks(address string) {
 			for {
 				conn, err := net.Dial("tcp", address)
 				if err != nil {
-					log.Debug().Msgf("连接远端tcp通道 %s失败,%s后重试", address, pongWait)
-					time.Sleep(pongWait)
+					log.Debug().Msgf("连接远端tcp通道 %s失败,%s后重试", address, core.PongWait)
+					time.Sleep(core.PongWait)
 					continue
 
 				}

@@ -1,5 +1,7 @@
 package core
 
+import "time"
+
 const WsPort = "4560"
 const TcpPort = "4561"
 const SocksPort = "4562"
@@ -17,3 +19,6 @@ type TaskMsg struct {
 	TaskID string `json:"task_id"`
 	Params string `json:"params"`
 }
+
+const PongWait = 20 * time.Second
+

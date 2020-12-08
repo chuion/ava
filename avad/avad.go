@@ -26,8 +26,8 @@ func dialWs(addr string) {
 			u := url.URL{Scheme: "ws", Host: addr, Path: "/ws"}
 			c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 			if err != nil {
-				log.Debug().Msgf("尝试连接节点ws通道%s失败,%s后重试:\n", addr, pongWait)
-				time.Sleep(pongWait)
+				log.Debug().Msgf("尝试连接节点ws通道%s失败,%s后重试:\n", addr, core.PongWait)
+				time.Sleep(core.PongWait)
 				continue
 			}
 			host := strings.Split(u.Host, ":")[0]
@@ -64,7 +64,7 @@ func DLocal(addrs []string) {
 	http.HandleFunc("/webTcpStatus", webTcpStatus)
 	http.HandleFunc("/webWorkerMap", webWorkerMap)
 	http.HandleFunc("/webWorkerMapR", webWorkerMapR)
-	addr := strings.Join([]string{"localhost", ":", core.Web}, "")
+	addr := strings.Join([]string{"0.0.0.0", ":", core.Web}, "")
 	http.ListenAndServe(addr, nil)
 
 }
