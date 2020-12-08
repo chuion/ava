@@ -5,7 +5,7 @@ import (
 	"ava/avah"
 	"github.com/phuslu/log"
 	"github.com/spf13/viper"
-	baselog "log"
+	baseLog "log"
 	"net/http"
 	"os"
 	"runtime"
@@ -33,7 +33,7 @@ func main() {
 	runtime.SetMutexProfileFraction(1)
 	runtime.SetBlockProfileRate(1)
 	go func() {
-		baselog.Println(http.ListenAndServe("localhost:6060", nil))
+		baseLog.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
 
 	if len(os.Args) > 1 {

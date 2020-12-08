@@ -28,23 +28,21 @@ func ping() {
 	ticker := time.NewTicker(pingPeriod)
 	defer ticker.Stop()
 	for {
-		select {
-		case <-ticker.C:
-			for host, ws := range wsConns {
-				if ws == nil {
-					reconnect(host)
-					continue
-				}
+		<-ticker.C
+		for host, ws := range wsConns {
+			if ws == nil {
+				reconnect(host)
+				continue
+			}
 
-				ws.SetPongHandler(func(string) error { ws.SetReadDeadline(time.Now().Add(core.PongWait)); return nil })
-				err := ws.WriteMessage(websocket.PingMessage, []byte{})
-				if err != nil {
-					log.Debug().Msgf("节点 %s的ws心跳检测失败,触发重新连接:%s", host, err)
-					reconnect(host)
+			ws.SetPongHandler(func(string) error { ws.SetReadDeadline(time.Now().Add(core.PongWait)); return nil })
+			err := ws.WriteMessage(websocket.PingMessage, []byte{})
+			if err != nil {
+				log.Debug().Msgf("节点 %s的ws心跳检测失败,触发重新连接:%s", host, err)
+				reconnect(host)
 
-				} else {
-					log.Debug().Msgf("节点 %s的ws心跳检测正常", host)
-				}
+			} else {
+				log.Debug().Msgf("节点 %s的ws心跳检测正常", host)
 			}
 		}
 	}
