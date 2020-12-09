@@ -23,7 +23,8 @@ func dialTcp(address string) {
 			conn, err := net.Dial("tcp", address)
 			if err != nil {
 				log.Debug().Msgf("连接远端tcp通道 %s失败,%s后重试", address, core.PongWait)
-				return
+				wsStatus.Set(host,false)
+				break
 			}
 			tcpStatus.Set(host, true)
 			log.Debug().Msgf("已创建连接节点tcp反弹通道%s\n", address)
@@ -54,7 +55,6 @@ func dialWs(addr string) {
 		}
 		host := strings.Split(u.Host, ":")[0]
 		wsStatus.Set(host, true)
-		//wsConns[host] = c
 		wsConns.Set(host, c)
 		log.Debug().Msgf("已创建连接节点ws通道%s\n", addr)
 		//读取注册信息
