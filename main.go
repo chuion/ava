@@ -40,11 +40,11 @@ func main() {
 	if len(os.Args) > 1 {
 		log.Debug().Msgf("程序启动以管理模式运行,配置文件为: %s\n", os.Args[1])
 		nodes := LoadConfig(os.Args[1])
-		avad.DLocal(nodes)
+		avad.Manger(nodes)
 	}
 
 	log.Debug().Msgf("程序启动以节点模式运行")
-	avah.HLocal()
+	avah.Node()
 
 }
 

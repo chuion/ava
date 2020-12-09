@@ -30,7 +30,7 @@ func dial(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HLocal() {
+func Node() {
 
 	go listenForAgents()
 

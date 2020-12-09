@@ -5,20 +5,6 @@ import (
 	"net/http"
 )
 
-func webWsConns(w http.ResponseWriter, r *http.Request) {
-	rv := make(map[string]string)
-	for k, v := range wsConns {
-		rv[k] = v.LocalAddr().String()
-	}
-
-	err := json.NewEncoder(w).Encode(rv)
-	if err != nil {
-		//... handle error
-		panic(err)
-	}
-
-}
-
 func webWsStatus(w http.ResponseWriter, r *http.Request) {
 	err := json.NewEncoder(w).Encode(wsStatus)
 	if err != nil {

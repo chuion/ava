@@ -3,13 +3,15 @@ package avad
 import (
 	"ava/core"
 	"ava/core/go-socks5"
+	"github.com/gorilla/websocket"
 	"github.com/hashicorp/yamux"
 	"github.com/phuslu/log"
 	"net"
+	"net/url"
 	"strings"
 )
 
-func connectForSocks(address string) {
+func dialTcp(address string) {
 	var session *yamux.Session
 	server, _ := socks5.New(&socks5.Config{})
 	host := strings.Split(address, ":")[0]
@@ -36,6 +38,27 @@ func connectForSocks(address string) {
 			relay(host, session, server)
 		}
 
+	}
+}
+
+func dialWs(addr string) {
+	host := strings.Split(addr, ":")[0]
+	wsStatus.Set(host, false)
+	status, _ := wsStatus.Get(host)
+	if !status.(bool) {
+		u := url.URL{Scheme: "ws", Host: addr, Path: "/ws"}
+		c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+		if err != nil {
+			log.Debug().Msgf("尝试连接节点ws通道%s失败,%s后重试:\n", addr, core.PongWait)
+			return
+		}
+		host := strings.Split(u.Host, ":")[0]
+		wsStatus.Set(host, true)
+		//wsConns[host] = c
+		wsConns.Set(host, c)
+		log.Debug().Msgf("已创建连接节点ws通道%s\n", addr)
+		//读取注册信息
+		infoReg(host, c)
 	}
 }
 

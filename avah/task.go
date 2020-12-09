@@ -7,7 +7,7 @@ import (
 
 func taskrouter(p core.TaskMsg) {
 	cmd := allConfig[p.Worker].Command
-	log.Debug().Msgf("接收到的原始参数: %s", p)
+	log.Debug().Msgf("接收到原始参数: %s  %s  %s", p.Worker,p.Route,p.TaskID)
 	dir := allConfig[p.Worker].Dir
 	go executor(cmd, p.Params, dir)
 
