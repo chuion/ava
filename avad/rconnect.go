@@ -23,7 +23,7 @@ func dialTcp(address string) {
 			conn, err := net.Dial("tcp", address)
 			if err != nil {
 				log.Debug().Msgf("连接远端tcp通道 %s失败,%s后重试", address, core.PongWait)
-				wsStatus.Set(host,false)
+				//wsStatus.Set(host,false)
 				break
 			}
 			tcpStatus.Set(host, true)
@@ -67,7 +67,7 @@ func relay(host string, session *yamux.Session, server *socks5.Server) {
 		stream, err := session.Accept()
 		if err != nil {
 			log.Debug().Msgf("公网节点无法连接%s可能已经关闭", host)
-			wsStatus.Set(host, false)
+			//wsStatus.Set(host, false)
 			tcpStatus.Set(host, false)
 			break
 		}
