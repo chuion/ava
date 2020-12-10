@@ -1,16 +1,17 @@
 package avah
 
 import (
+	"bufio"
 	"context"
-	"fmt"
 	"github.com/phuslu/log"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
-func executor(command, arg, dir string) {
+func executor(command, arg, taskid, dir string) {
 	//go reaper.Reap()
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -25,9 +26,12 @@ func executor(command, arg, dir string) {
 	out, err := cmd.CombinedOutput()
 
 	if err != nil {
-		log.Debug().Msgf("cmd.Run() failed with %s\n", err)
+		log.Debug().Msgf("程序执行失败 %s\n", err)
 	}
-	fmt.Printf("----------%s 标准输出-----------:\n%s\n", dir, string(out))
+	//fmt.Printf("----------%s 标准输出-----------:\n%s\n", dir, string(out))
+
+	logfile:=filepath.Join(dir, taskid)
+	writelog(logfile,out)
 
 	go func() {
 		cmd.Wait()
@@ -50,4 +54,40 @@ func fileConfig(dir, arg string) (filename string) {
 		return ""
 	}
 	return tmpFile.Name()
+}
+
+func writelog(filename string, logmsg []byte) {
+
+	var file *os.File
+	var err error
+	if Exists(filename) {
+		file, err = os.OpenFile(filename, os.O_WRONLY|os.O_APPEND, 0666)
+		if err != nil {
+			log.Debug().Msgf("文件%s打开失败", filename, err)
+		}
+	} else {
+		file, err = os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0666)
+		if err != nil {
+			log.Debug().Msgf("文件%s创建失败", filename, err)
+		}
+	}
+
+	defer file.Close()
+	write := bufio.NewWriter(file)
+	for i := 0; i < 5; i++ {
+		write.Write(logmsg)
+	}
+	write.Flush()
+
+}
+
+func Exists(path string) bool {
+	_, err := os.Stat(path) //os.Stat获取文件信息
+	if err != nil {
+		if os.IsExist(err) {
+			return true
+		}
+		return false
+	}
+	return true
 }
