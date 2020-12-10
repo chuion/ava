@@ -27,14 +27,14 @@ func executor(command, arg, taskid, dir string) {
 
 	if err != nil {
 		log.Debug().Msgf("程序执行失败 %s", err)
+		log.Debug().Msgf("程序%s %s启动失败,任务id: %s", script[0], script[1], taskid)
+		return
 	}
+	log.Debug().Msgf("程序%s %s成功启动,任务id: %s 进程id: %d", script[0], script[1], taskid, cmd.Process.Pid)
 	//fmt.Printf("----------%s 标准输出-----------:\n%s\n", dir, string(out))
-	log.Debug().Msgf("程序%s %s成功启动,任务id: %s 进程id: %s", script[0], script[1], taskid, cmd.Process.Pid)
 	taskid = taskid + ".log"
 	logfile := filepath.Join(dir, taskid)
 	writelog(logfile, out)
-
-
 
 	go func() {
 		cmd.Wait()
