@@ -23,10 +23,11 @@ func executor(command, arg, dir string) {
 	cmd.Dir = dir
 
 	out, err := cmd.CombinedOutput()
+
 	if err != nil {
 		log.Debug().Msgf("cmd.Run() failed with %s\n", err)
 	}
-	fmt.Printf("combined out:\n%s\n", string(out))
+	fmt.Printf("----------%s 标准输出-----------:\n%s\n", dir, string(out))
 
 	go func() {
 		cmd.Wait()
