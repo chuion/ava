@@ -29,9 +29,9 @@ func executor(command, arg, taskid, dir string) {
 		log.Debug().Msgf("程序执行失败 %s\n", err)
 	}
 	//fmt.Printf("----------%s 标准输出-----------:\n%s\n", dir, string(out))
-
-	logfile:=filepath.Join(dir, taskid)
-	writelog(logfile,out)
+	taskid = taskid + ".log"
+	logfile := filepath.Join(dir, taskid)
+	writelog(logfile, out)
 
 	go func() {
 		cmd.Wait()
@@ -74,9 +74,7 @@ func writelog(filename string, logmsg []byte) {
 
 	defer file.Close()
 	write := bufio.NewWriter(file)
-	for i := 0; i < 5; i++ {
-		write.Write(logmsg)
-	}
+	write.Write(logmsg)
 	write.Flush()
 
 }
