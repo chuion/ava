@@ -21,12 +21,12 @@ func ping() {
 		ch := wsConns.IterBuffered()
 		for item := range ch {
 			host := item.Key
-			ws := item.Val.(*websocket.Conn)
-
-			if ws == nil {
+			ws, ok := item.Val.(*websocket.Conn)
+			if !ok {
 				reconnect(host)
 				continue
 			}
+
 			ws.SetPongHandler(func(string) error { ws.SetReadDeadline(time.Now().Add(core.PongWait)); return nil })
 			err := ws.WriteMessage(websocket.PingMessage, []byte{})
 			if err != nil {
