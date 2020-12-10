@@ -26,12 +26,14 @@ func executor(command, arg, taskid, dir string) {
 	out, err := cmd.CombinedOutput()
 
 	if err != nil {
-		log.Debug().Msgf("程序执行失败 %s\n", err)
+		log.Debug().Msgf("程序执行失败 %s", err)
 	}
 	//fmt.Printf("----------%s 标准输出-----------:\n%s\n", dir, string(out))
 	taskid = taskid + ".log"
 	logfile := filepath.Join(dir, taskid)
 	writelog(logfile, out)
+
+
 
 	go func() {
 		cmd.Wait()
