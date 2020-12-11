@@ -1,9 +1,9 @@
 package avah
 
 import (
-	"bufio"
 	"context"
 	"github.com/phuslu/log"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -19,28 +19,40 @@ func executor(command, arg, taskid, dir string) {
 
 	script := strings.Split(command, " ")
 	log.Debug().Msgf("启动器接到命令: %s %s %s %s\n", script[0], script[1], "placeholder", filename)
-
+	log.Debug().Msgf("工作目录 %s", dir)
 	cmd := exec.CommandContext(ctx, script[0], script[1], "placeholder", filename)
 	cmd.Dir = dir
 
-	out, err := cmd.CombinedOutput()
-
+	stdout, err := cmd.StdoutPipe()
+	cmd.Stderr = cmd.Stdout
 	if err != nil {
-		log.Debug().Msgf("程序执行失败 %s", err)
-		log.Debug().Msgf("程序%s %s启动失败,任务id: %s", script[0], script[1], taskid)
+		log.Debug().Msgf("开启日志管道失败")
+	}
+
+	if err = cmd.Start(); err != nil {
+		log.Debug().Msgf("程序%s %s启动失败,任务id: %s,%s", script[0], script[1], taskid, err)
+		if err := os.Remove(filename); err != nil {
+			log.Debug().Msgf("临时参数文件删除失败 %s", err)
+		}
 		return
 	}
-	log.Debug().Msgf("程序%s %s成功启动,任务id: %s 进程id: %d", script[0], script[1], taskid, cmd.Process.Pid)
-	//fmt.Printf("----------%s 标准输出-----------:\n%s\n", dir, string(out))
+
 	taskid = taskid + ".log"
 	logfile := filepath.Join(dir, taskid)
-	writelog(logfile, out)
+	dstlog := createFile(logfile)
+
+	// 从管道中实时获取输出并打印到终端
+	go asyncLog(ctx, stdout, dstlog)
+
+	log.Debug().Msgf("程序%s %s成功启动,任务id: %s 进程id: %d", script[0], script[1], taskid, cmd.Process.Pid)
 
 	go func() {
 		cmd.Wait()
 		cancel()
-		os.Remove(filename)
-		log.Debug().Msgf("任务: %s执行完成,退出", command)
+		if err := os.Remove(filename); err != nil {
+			log.Debug().Msgf("临时参数文件删除失败 %s", err)
+		}
+		log.Debug().Msgf("任务: %s 执行完成,退出", command)
 	}()
 
 }
@@ -59,27 +71,23 @@ func fileConfig(dir, arg string) (filename string) {
 	return tmpFile.Name()
 }
 
-func writelog(filename string, logmsg []byte) {
-
-	var file *os.File
+func createFile(filename string) (file *os.File) {
 	var err error
 	if Exists(filename) {
 		file, err = os.OpenFile(filename, os.O_WRONLY|os.O_APPEND, 0666)
 		if err != nil {
-			log.Debug().Msgf("文件%s打开失败", filename, err)
+			log.Debug().Msgf("文件%s打开失败%s", filename, err)
+			return nil
 		}
 	} else {
 		file, err = os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0666)
 		if err != nil {
-			log.Debug().Msgf("文件%s创建失败", filename, err)
+			log.Debug().Msgf("文件%s创建失败%s", filename, err)
+			return nil
 		}
 	}
-
-	defer file.Close()
-	write := bufio.NewWriter(file)
-	write.Write(logmsg)
-	write.Flush()
-
+	log.Debug().Msgf("日志文件%s创建成功", filename)
+	return file
 }
 
 func Exists(path string) bool {
@@ -91,4 +99,34 @@ func Exists(path string) bool {
 		return false
 	}
 	return true
+}
+
+func asyncLog(ctx context.Context, stdout io.ReadCloser, dstlog *os.File) {
+	tmp := make([]byte, 1024)
+
+	for {
+		select {
+		case <-ctx.Done():
+			log.Debug().Msgf("进程结束日志协程退出")
+			return
+		default:
+			strNum, err := stdout.Read(tmp)
+			if err != nil {
+				//读到结尾
+				if err == io.EOF || strings.Contains(err.Error(), "file already closed") {
+					err = nil
+				} else {
+					log.Debug().Msgf("%s 日志队列读取失败 %s", dstlog.Name(), err)
+					return
+				}
+			}
+			if strNum > 0 {
+				_, err = dstlog.Write(tmp)
+				if err != nil {
+					log.Debug().Msgf("%s 日志文件写入失败 %s", dstlog.Name(), err)
+					return
+				}
+			}
+		}
+	}
 }
