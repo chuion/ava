@@ -50,10 +50,9 @@ H监听端口 websocket: 4560, tcp: 4561, socks5: 4562
 ##### 4. 部分api
 web状态查看
 ```bash
-http://127.0.0.1:4000/webWsStatus              --ws连接状态
-http://127.0.0.1:4000/webTcpStatus             --tcp连接状态
-http://127.0.0.1:4000/webWorkerMap             --任务<-->节点对应关系
+http://127.0.0.1:4000/webWsStatus              --连接状态
 http://127.0.0.1:4000/webWorkerMapR            --节点<-->任务对应关系
+http://127.0.0.1:4000/info                     --主机状态
 ```
 发送命令请求: POST  http://127.0.0.1:4000/exectask
 ```bash
@@ -69,4 +68,4 @@ http://127.0.0.1:4000/webWorkerMapR            --节点<-->任务对应关系
 
 
 ##### 4 bug
-协程,socket泄露
+断开连接后,第一次发送请求,依然会报成功
