@@ -12,6 +12,8 @@ var wsConns = cmap.New()
 var wsStatus = cmap.New()
 var tcpStatus = cmap.New()
 
+
+
 func Manger(addrs []string) {
 
 	for _, host := range addrs {
@@ -22,10 +24,10 @@ func Manger(addrs []string) {
 
 	go ping()
 
-
 	http.HandleFunc("/exectask", taskRouter)
 	http.HandleFunc("/webWsStatus", webWsStatus)
 	http.HandleFunc("/webWorkerMapR", webWorkerMapR)
+	http.HandleFunc("/info", info)
 	addr := strings.Join([]string{"0.0.0.0", ":", core.Web}, "")
 	http.ListenAndServe(addr, nil)
 

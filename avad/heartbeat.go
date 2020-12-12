@@ -34,8 +34,7 @@ func ping() {
 				continue
 			}
 			log.Debug().Msgf("节点 %s的ws心跳检测正常", host)
-			//todo想不明白
-			//wsStatus.Set(host, true)
+
 
 		}
 		<-ticker.C

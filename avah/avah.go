@@ -6,9 +6,22 @@ import (
 	"github.com/phuslu/log"
 	"net/http"
 	"strings"
+	"time"
 )
 
 var upgrader = websocket.Upgrader{} // use default options
+
+func update() {
+	ticker := time.NewTicker(core.UpdateWait)
+	defer ticker.Stop()
+	for {
+		tmp:=make(map[string]core.LauncherConf)
+		tmp["info"]=core.LauncherConf{Version: "1.0"}
+		taskchan <- tmp
+		<-ticker.C
+	}
+
+}
 
 func dial(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
@@ -16,8 +29,12 @@ func dial(w http.ResponseWriter, r *http.Request) {
 		log.Debug().Msgf("ws握手失败: %s", err)
 		return
 	}
-	infoReg(c)
+	go infoReg(c)
+	listAll(".")
+	taskchan <- allConfig
+	go update()
 	defer c.Close()
+
 	p := core.TaskMsg{}
 	for {
 		err := c.ReadJSON(&p)

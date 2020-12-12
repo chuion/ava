@@ -27,4 +27,12 @@ func webWorkerMapR(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func info(w http.ResponseWriter, r *http.Request) {
+	err := json.NewEncoder(w).Encode(Ver)
+	if err != nil {
+		//... handle error
+		panic(err)
+	}
+
+}
 

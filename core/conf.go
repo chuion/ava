@@ -11,6 +11,7 @@ type LauncherConf struct {
 	Worker  string `json:"worker"`
 	Command string `json:"command"`
 	Dir     string `json:"dir"`
+	Version string `json:"version"`
 }
 
 type TaskMsg struct {
@@ -21,6 +22,7 @@ type TaskMsg struct {
 }
 
 const PongWait = 20 * time.Second
+const UpdateWait = 10 * time.Second
 
 //白名单
 var Sites []string

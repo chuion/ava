@@ -11,15 +11,17 @@ import (
 )
 
 var allConfig = make(map[string]core.LauncherConf)
+var taskchan = make(chan map[string]core.LauncherConf )
 
 func infoReg(c *websocket.Conn) {
-	log.Debug().Msgf("接到管理端ws连接成功,开始注册/更新业务功能\n")
-	listAll(".")
-
-	err := c.WriteJSON(allConfig)
-	if err != nil {
-		log.Debug().Msgf("注册/更新业务功能失败\n")
-
+	for  {
+		newconfig := <- taskchan
+		log.Debug().Msgf("更新节点信息")
+		err := c.WriteJSON(newconfig)
+		if err != nil {
+			log.Debug().Msgf("更新节点信息失败 %s",err)
+			return
+		}
 	}
 }
 
