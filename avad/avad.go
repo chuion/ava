@@ -22,14 +22,9 @@ func Manger(addrs []string) {
 
 	go ping()
 
-	for _, host := range addrs {
-		reconnect(host)
-	}
 
 	http.HandleFunc("/exectask", taskRouter)
 	http.HandleFunc("/webWsStatus", webWsStatus)
-	http.HandleFunc("/webTcpStatus", webTcpStatus)
-	http.HandleFunc("/webWorkerMap", webWorkerMap)
 	http.HandleFunc("/webWorkerMapR", webWorkerMapR)
 	addr := strings.Join([]string{"0.0.0.0", ":", core.Web}, "")
 	http.ListenAndServe(addr, nil)

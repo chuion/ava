@@ -15,10 +15,12 @@ func infoReg(host string, c *websocket.Conn) {
 	if err != nil {
 		log.Debug().Msgf("读取节点: %s注册信息失败", host)
 	}
+
 	for k, _ := range p {
 		workerMapR[host] = append(workerMapR[host], k)
 		workerMap[k] = append(workerMap[k], host)
 	}
+
 
 	//去重配置
 	for k, v := range workerMap {
@@ -27,6 +29,7 @@ func infoReg(host string, c *websocket.Conn) {
 	for k, v := range workerMapR {
 		workerMapR[k] = RemoveRepeatedElement(v)
 	}
+	log.Debug().Msgf("读取节点: %s注册信息成功", host)
 }
 
 func RemoveRepeatedElement(arr []string) (newArr []string) {

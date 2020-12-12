@@ -17,7 +17,6 @@ func ping() {
 	ticker := time.NewTicker(pingPeriod)
 	defer ticker.Stop()
 	for {
-		<-ticker.C
 		ch := wsConns.IterBuffered()
 		for item := range ch {
 			host := item.Key
@@ -39,6 +38,7 @@ func ping() {
 			//wsStatus.Set(host, true)
 
 		}
+		<-ticker.C
 	}
 }
 
