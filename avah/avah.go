@@ -9,6 +9,7 @@ import (
 )
 
 var upgrader = websocket.Upgrader{} // use default options
+var conn *websocket.Conn
 
 func update() {
 	//ticker := time.NewTicker(core.UpdateWait)
@@ -29,27 +30,28 @@ func update() {
 
 }
 
-func updateInfo(c *websocket.Conn) {
+func updateInfo() {
 	listAll(".")
 	taskchan <- allConfig
-	go sendMsg(c)
+	go sendMsg()
 	go update()
 }
 
 func dial(w http.ResponseWriter, r *http.Request) {
-	c, err := upgrader.Upgrade(w, r, nil)
+	var err error
+	conn, err = upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Debug().Msgf("ws握手失败: %s", err)
 		return
 	}
-	log.Debug().Msgf("管理节点建立连接成功")
+	log.Debug().Msgf("接到管理端ws连接")
 
-	updateInfo(c)
-	defer c.Close()
+	updateInfo()
+	defer conn.Close()
 
 	p := core.TaskMsg{}
 	for {
-		err := c.ReadJSON(&p)
+		err := conn.ReadJSON(&p)
 		if err != nil {
 			log.Debug().Msgf("读取数据失败,管理节点可能已关闭")
 			break
@@ -61,10 +63,10 @@ func dial(w http.ResponseWriter, r *http.Request) {
 
 func Node() {
 
-	go listenForAgents()
+	go listenTcp()
 
 	addr := strings.Join([]string{"0.0.0.0", ":", core.WsPort}, "")
 	http.HandleFunc("/ws", dial)
-	log.Debug().Msgf("ws监听地址: %s \n", addr)
+	log.Debug().Msgf("ws监听地址: %s ", addr)
 	http.ListenAndServe(addr, nil)
 }

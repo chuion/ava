@@ -3,7 +3,6 @@ package avah
 import (
 	"ava/core"
 	"fmt"
-	"github.com/gorilla/websocket"
 	"github.com/phuslu/log"
 	"github.com/spf13/viper"
 	"io/ioutil"
@@ -13,10 +12,10 @@ import (
 var allConfig = make(map[string]core.LauncherConf)
 var taskchan = make(chan map[string]core.LauncherConf, 1024)
 
-func sendMsg(c *websocket.Conn) {
+func sendMsg() {
 	for {
 		msg := <-taskchan
-		err := c.WriteJSON(msg)
+		err := conn.WriteJSON(msg)
 		if err != nil {
 			log.Debug().Msgf("更新节点信息失败 %s", err)
 			return

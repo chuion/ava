@@ -2,54 +2,44 @@ package avah
 
 import (
 	"ava/core"
-	"fmt"
 	"github.com/hashicorp/yamux"
 	"github.com/phuslu/log"
 	"io"
 	"net"
-	"os"
 	"strings"
 	"time"
 )
 
-var proxytout = time.Millisecond * 1000 //timeout for wait magicbytes
 var socksListen net.Listener
 var lis = false
-var session *yamux.Session
 
 // listen for agents
-func listenForAgents() {
+func listenTcp() {
 	address := strings.Join([]string{"0.0.0.0", ":", core.TcpPort}, "")
-
-	var err, erry error
-	var ln net.Listener
-	log.Debug().Msgf("Listening for agents on %s", address)
-	ln, err = net.Listen("tcp", address)
-
+	log.Debug().Msgf("tcp监听地址: %s ", address)
+	listener, err := net.Listen("tcp", address)
 	if err != nil {
-		log.Debug().Msgf("Error listening on %s: %v", address, err)
+		log.Debug().Msgf("监听地址失败 %s: %v", address, err)
+		panic(err)
 	}
+	var session *yamux.Session
 
 	for {
-		conn, err := ln.Accept()
+		conn, err := listener.Accept()
 		if err != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "Errors accepting!")
-			return
+			log.Debug().Msgf("接收管理端连接失败 %s", err)
+			continue
 		}
-		//defer conn.Close()
 
 		agentStr := conn.RemoteAddr().String()
-		log.Debug().Msgf("[%s] Got a connection from %v: ", agentStr, conn.RemoteAddr())
+		log.Debug().Msgf("接收到管理端tcp连接")
 		//_ = conn.SetReadDeadline(time.Now().Add(proxytout))
 		//conn.SetReadDeadline(time.Now().Add(100 * time.Hour))
-
-		//Add connection to yamux
-		session, erry = yamux.Client(conn, nil)
-		if erry != nil {
-			log.Debug().Msgf("[%s] Error creating client in yamux for %s: %v", agentStr, conn.RemoteAddr(), erry)
+		session, err = yamux.Client(conn, nil)
+		if err != nil {
+			log.Debug().Msgf("建立yamux session失败 %s", err)
 		}
-
-		go listenForClients(agentStr)
+		go listenSocks(session, agentStr)
 
 	}
 
@@ -57,15 +47,16 @@ func listenForAgents() {
 
 // Catches local clients and connects to yamux
 
-func listenForClients(agentStr string) error {
+func listenSocks(session *yamux.Session, agentStr string) {
 	var err error
 	address := strings.Join([]string{"0.0.0.0", ":", core.SocksPort}, "")
 
 	if !lis {
-		log.Debug().Msgf("[%s] Waiting for clients on %s", agentStr, address)
+		log.Debug().Msgf("管理端%s 等待本地连接到 %s", agentStr, address)
 		socksListen, err = net.Listen("tcp", address)
 		if err != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "Errors accepting!")
+			log.Debug().Msgf("本地socks5端口监听失败 %s", err)
+			panic(err)
 		}
 		lis = true
 	}
@@ -73,24 +64,16 @@ func listenForClients(agentStr string) error {
 	for {
 		conn, err := socksListen.Accept()
 		if err != nil {
-			log.Debug().Msgf("[%s] Error accepting on %s: %v", agentStr, address, err)
-			return err
-		}
-		if session == nil {
-			log.Debug().Msgf("[%s] Session on %s is nil", agentStr, address)
-			conn.Close()
+			log.Debug().Msgf("[%s] 接收本地请求失败 %s: %v", agentStr, address, err)
 			continue
 		}
-		//log.Debug().Msgf("[%s] Got client. Opening stream for %s", agentStr, conn.RemoteAddr())
 
 		stream, err := session.Open()
 		if err != nil {
-			log.Debug().Msgf("[%s] Error opening stream for %s: %v", agentStr, conn.RemoteAddr(), err)
+			log.Debug().Msgf("[%s] 开启stream失败 %s: %v", agentStr, conn.RemoteAddr(), err)
 			_ = session.Close()
-
-			return err
+			return
 		}
-
 		go relay(conn, stream)
 
 	}

@@ -23,23 +23,40 @@ func dialTcp(address string) {
 			conn, err := net.Dial("tcp", address)
 			if err != nil {
 				log.Debug().Msgf("连接远端tcp通道 %s失败,%s后重试", address, core.PongWait)
-				//wsStatus.Set(host,false)
 				break
 			}
 			tcpStatus.Set(host, true)
-			log.Debug().Msgf("已创建连接节点tcp反弹通道%s\n", address)
-			session, err = yamux.Server(conn, nil)
+			log.Debug().Msgf("已创建连接节点tcp反弹通道%s", address)
 
+			session, err = yamux.Server(conn, nil)
 			if err != nil {
 				//todo 这里的处理好像还有坑
 				session.Close()
 				panic(err)
-
 			}
 			relay(host, session, server)
 		}
 
 	}
+}
+
+func relay(host string, session *yamux.Session, server *socks5.Server) {
+	for {
+		stream, err := session.Accept()
+		if err != nil {
+			log.Debug().Msgf("公网节点无法连接%s可能已经关闭", host)
+			tcpStatus.Set(host, false)
+			break
+		}
+		log.Debug().Msgf("代理转发通信 %s %s",stream.LocalAddr(),stream.RemoteAddr())
+		go func() {
+			err = server.ServeConn(stream)
+			if err != nil {
+				log.Debug().Err(err)
+			}
+		}()
+	}
+
 }
 
 func dialWs(addr string) {
@@ -58,25 +75,4 @@ func dialWs(addr string) {
 		log.Debug().Msgf("已连接节点ws通道%s\n", addr)
 		go getNodeInfo(host, c)
 	}
-}
-
-func relay(host string, session *yamux.Session, server *socks5.Server) {
-	for {
-		stream, err := session.Accept()
-		if err != nil {
-			log.Debug().Msgf("公网节点无法连接%s可能已经关闭", host)
-			//wsStatus.Set(host, false)
-			tcpStatus.Set(host, false)
-			break
-		}
-		log.Debug().Msgf("Passing off to socks5")
-		go func() {
-			err = server.ServeConn(stream)
-			if err != nil {
-				log.Debug().Err(err)
-
-			}
-		}()
-	}
-
 }
