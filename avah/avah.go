@@ -6,21 +6,34 @@ import (
 	"github.com/phuslu/log"
 	"net/http"
 	"strings"
-	"time"
 )
 
 var upgrader = websocket.Upgrader{} // use default options
 
 func update() {
-	ticker := time.NewTicker(core.UpdateWait)
-	defer ticker.Stop()
-	for {
-		tmp:=make(map[string]core.LauncherConf)
-		tmp["info"]=core.LauncherConf{Version: "1.0"}
-		taskchan <- tmp
-		<-ticker.C
+	//ticker := time.NewTicker(core.UpdateWait)
+	//defer ticker.Stop()
+	//tmp := make(map[string]core.LauncherConf)
+	//for {
+	//	tmp["info"] = core.LauncherConf{
+	//		PcInfo: core.GetPcInfo(),
+	//	}
+	//	taskchan <- tmp
+	//	<-ticker.C
+	//}
+	tmp := make(map[string]core.LauncherConf)
+	tmp["info"] = core.LauncherConf{
+		PcInfo: core.GetPcInfo(),
 	}
+	taskchan <- tmp
 
+}
+
+func updateInfo(c *websocket.Conn) {
+	listAll(".")
+	taskchan <- allConfig
+	go sendMsg(c)
+	go update()
 }
 
 func dial(w http.ResponseWriter, r *http.Request) {
@@ -29,10 +42,9 @@ func dial(w http.ResponseWriter, r *http.Request) {
 		log.Debug().Msgf("ws握手失败: %s", err)
 		return
 	}
-	go infoReg(c)
-	listAll(".")
-	taskchan <- allConfig
-	go update()
+	log.Debug().Msgf("管理节点建立连接成功")
+
+	updateInfo(c)
 	defer c.Close()
 
 	p := core.TaskMsg{}

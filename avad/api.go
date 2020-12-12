@@ -7,9 +7,9 @@ import (
 )
 
 func webWsStatus(w http.ResponseWriter, r *http.Request) {
-	rv:=map[string]cmap.ConcurrentMap{}
-	rv["ws"]=wsStatus
-	rv["tcp"]=tcpStatus
+	rv := map[string]cmap.ConcurrentMap{}
+	rv["ws"] = wsStatus
+	rv["tcp"] = tcpStatus
 	err := json.NewEncoder(w).Encode(rv)
 	if err != nil {
 		//... handle error
@@ -35,4 +35,3 @@ func info(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
-

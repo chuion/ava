@@ -11,17 +11,17 @@ import (
 )
 
 var allConfig = make(map[string]core.LauncherConf)
-var taskchan = make(chan map[string]core.LauncherConf )
+var taskchan = make(chan map[string]core.LauncherConf, 1024)
 
-func infoReg(c *websocket.Conn) {
-	for  {
-		newconfig := <- taskchan
-		log.Debug().Msgf("更新节点信息")
-		err := c.WriteJSON(newconfig)
+func sendMsg(c *websocket.Conn) {
+	for {
+		msg := <-taskchan
+		err := c.WriteJSON(msg)
 		if err != nil {
-			log.Debug().Msgf("更新节点信息失败 %s",err)
+			log.Debug().Msgf("更新节点信息失败 %s", err)
 			return
 		}
+
 	}
 }
 

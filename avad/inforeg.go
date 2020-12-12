@@ -8,36 +8,35 @@ import (
 
 var workerMap = make(map[string][]string)
 var workerMapR = make(map[string][]string)
-var Ver = make(map[string]string)
+var Ver = make(map[string]core.PcInfo)
 
-func infoReg(host string, c *websocket.Conn) {
-	p := make(map[string]core.LauncherConf)
+func getNodeInfo(host string, c *websocket.Conn) {
 	for {
+		p := make(map[string]core.LauncherConf)
 		err := c.ReadJSON(&p)
 		if err != nil {
-			log.Debug().Msgf("读取节点: %s注册信息失败", host)
+			log.Debug().Msgf("读取节点: %s注册信息失败 %s", host, err)
 			return
 		}
 
-		for k, v := range p {
-			if k == "info" {
-				Ver[host] = v.Version
-				log.Debug().Msgf("读取节点: %s 状态信息成功", host)
-				continue
-			}
-			workerMapR[host] = append(workerMapR[host], k)
-			workerMap[k] = append(workerMap[k], host)
-			//去重配置
-			for k, v := range workerMap {
-				workerMap[k] = RemoveRepeatedElement(v)
-			}
-			for k, v := range workerMapR {
-				workerMapR[k] = RemoveRepeatedElement(v)
-			}
-			log.Debug().Msgf("读取节点: %s注册信息成功", host)
-
+		if value, ok := p["info"]; ok {
+			Ver[host] = value.PcInfo
+			log.Debug().Msgf("读取节点: %s 状态信息成功", host)
+			continue
 		}
 
+		for k, _ := range p {
+			workerMapR[host] = append(workerMapR[host], k)
+			workerMap[k] = append(workerMap[k], host)
+		}
+		//去重配置
+		for k, v := range workerMap {
+			workerMap[k] = RemoveRepeatedElement(v)
+		}
+		for k, v := range workerMapR {
+			workerMapR[k] = RemoveRepeatedElement(v)
+		}
+		log.Debug().Msgf("读取节点: %s注册信息成功", host)
 	}
 
 }

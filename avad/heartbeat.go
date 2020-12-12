@@ -29,13 +29,11 @@ func ping() {
 			ws.SetPongHandler(func(string) error { ws.SetReadDeadline(time.Now().Add(core.PongWait)); return nil })
 			err := ws.WriteMessage(websocket.PingMessage, []byte{})
 			if err != nil {
-				log.Debug().Msgf("节点 %s的ws心跳检测失败,触发重新连接:%s", host, err)
+				log.Debug().Msgf("节点 %s的ws心跳检测失败,重新连接 %s", host, err)
 				reconnect(host)
 				continue
 			}
-			log.Debug().Msgf("节点 %s的ws心跳检测正常", host)
-
-
+			//log.Debug().Msgf("节点 %s的ws心跳检测正常", host)
 		}
 		<-ticker.C
 	}

@@ -53,17 +53,12 @@ func dialWs(addr string) {
 			log.Debug().Msgf("尝试连接节点ws通道%s失败,%s后重试:\n", addr, core.PongWait)
 			return
 		}
-		host := strings.Split(u.Host, ":")[0]
 		wsStatus.Set(host, true)
 		wsConns.Set(host, c)
-		log.Debug().Msgf("已创建连接节点ws通道%s\n", addr)
-		//读取注册信息
-		//infoReg(host, c)
-		go infoReg(host, c)
+		log.Debug().Msgf("已连接节点ws通道%s\n", addr)
+		go getNodeInfo(host, c)
 	}
 }
-
-
 
 func relay(host string, session *yamux.Session, server *socks5.Server) {
 	for {
