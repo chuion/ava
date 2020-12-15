@@ -33,6 +33,15 @@ func ping() {
 				reconnect(host)
 				continue
 			}
+
+
+			status, _ := tcpStatus.Get(host)
+			if !status.(bool) {
+				log.Debug().Msgf("节点 %s tcp中断,重新连接", host)
+				addrTcp := strings.Join([]string{host, ":", core.TcpPort}, "")
+				go dialTcp(addrTcp)
+			}
+
 			//log.Debug().Msgf("节点 %s的ws心跳检测正常", host)
 		}
 		<-ticker.C
