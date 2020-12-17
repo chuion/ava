@@ -1,4 +1,0 @@
-{
-    "worker": "py_worker",
-    "command": "python deal.py"
-}
