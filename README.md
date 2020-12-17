@@ -62,7 +62,9 @@ http://127.0.0.1:4000/info                     --主机状态
 "params": "eyJtZXRob2QiOiAiZmFrZS5lY2hvIiwgInBhcmFtcyI6IHsiYSI6IDEyM319"
 "route": "192.168.169.128"   ---(可选,定点投送)
 }
+
 ```
+在运行节点上,挂127.0.0.1:4562的socks5代理,可直接穿透到内网,白名单为config.json里的配置
 
 
 
