@@ -1,6 +1,9 @@
 package core
 
-import "time"
+import (
+	cmap "github.com/orcaman/concurrent-map"
+	"time"
+)
 
 const WsPort = "4560"
 const TcpPort = "4561"
@@ -14,9 +17,19 @@ type LauncherConf struct {
 	PcInfo
 }
 
+var ProcessStatus = cmap.New()
+
+type ProcessInfo struct {
+	TaskId  string
+	Pid     int32
+	Mem     uint64
+	Threads int32
+	Files   int
+}
+
 type PcInfo struct {
-	Version string `json:"version"`
-	Pid     int
+	Version   string `json:"version"`
+	ProStatus []ProcessInfo
 }
 
 type TaskMsg struct {
@@ -27,7 +40,7 @@ type TaskMsg struct {
 }
 
 const PongWait = 20 * time.Second
-const UpdateWait = 10 * time.Second
+const UpdateWait = 2 * time.Second
 
 //白名单
 var Sites []string

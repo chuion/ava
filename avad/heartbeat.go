@@ -34,7 +34,6 @@ func ping() {
 				continue
 			}
 
-
 			status, _ := tcpStatus.Get(host)
 			if !status.(bool) {
 				log.Debug().Msgf("节点 %s tcp中断,重新连接", host)

@@ -6,28 +6,23 @@ import (
 	"github.com/phuslu/log"
 	"net/http"
 	"strings"
+	"time"
 )
 
 var upgrader = websocket.Upgrader{} // use default options
 var conn *websocket.Conn
 
 func update() {
-	//ticker := time.NewTicker(core.UpdateWait)
-	//defer ticker.Stop()
-	//tmp := make(map[string]core.LauncherConf)
-	//for {
-	//	tmp["info"] = core.LauncherConf{
-	//		PcInfo: core.GetPcInfo(),
-	//	}
-	//	taskchan <- tmp
-	//	<-ticker.C
-	//}
+	ticker := time.NewTicker(core.UpdateWait)
+	defer ticker.Stop()
 	tmp := make(map[string]core.LauncherConf)
-	tmp["info"] = core.LauncherConf{
-		PcInfo: core.GetPcInfo(),
+	for {
+		tmp["info"] = core.LauncherConf{
+			PcInfo: core.GetPcInfo(),
+		}
+		taskchan <- tmp
+		<-ticker.C
 	}
-	taskchan <- tmp
-
 }
 
 func updateInfo() {
@@ -62,6 +57,7 @@ func dial(w http.ResponseWriter, r *http.Request) {
 }
 
 func Node() {
+
 
 	go listenTcp()
 

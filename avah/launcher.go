@@ -1,6 +1,7 @@
 package avah
 
 import (
+	"ava/core"
 	"context"
 	"github.com/phuslu/log"
 	"io"
@@ -37,14 +38,14 @@ func executor(command, arg, taskid, dir string) {
 		return
 	}
 
-	taskid = taskid + ".log"
-	logfile := filepath.Join(dir, taskid)
+	logfile := filepath.Join(dir, taskid+".log")
 	dstlog := createFile(logfile)
 
 	// 从管道中实时获取输出并打印到终端
 	go asyncLog(ctx, stdout, dstlog)
 
 	log.Debug().Msgf("程序%s %s成功启动,任务id: %s 进程id: %d", script[0], script[1], taskid, cmd.Process.Pid)
+	core.ProcessStatus.Set(taskid,cmd.Process.Pid)
 
 	go func() {
 		cmd.Wait()
@@ -53,6 +54,7 @@ func executor(command, arg, taskid, dir string) {
 			log.Debug().Msgf("临时参数文件删除失败 %s", err)
 		}
 		log.Debug().Msgf("任务: %s 执行完成,退出", command)
+		core.ProcessStatus.Remove(taskid)
 	}()
 
 }

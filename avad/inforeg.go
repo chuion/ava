@@ -21,7 +21,7 @@ func getNodeInfo(host string, c *websocket.Conn) {
 
 		if value, ok := p["info"]; ok {
 			Ver[host] = value.PcInfo
-			log.Debug().Msgf("读取节点: %s 状态信息成功", host)
+			//log.Debug().Msgf("读取节点: %s 状态信息成功", host)
 			continue
 		}
 
