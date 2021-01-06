@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/phuslu/log"
 	"math/rand"
+	"sort"
 	"time"
 )
 
@@ -12,37 +13,68 @@ func fixed(p core.TaskMsg) (rv *result) {
 	log.Debug().Msgf("接到 %s的定点任务", p.Route)
 	_, err := netAvailable(p.Route)
 	if err != nil {
-		return &result{400, err.Error(),p.Route}
+		return &result{400, err.Error(), p.Route}
 	}
 	host := workerAvailable(p.Route, p.Worker)
 	if host != "" {
 		code, msg := send(p.Route, p)
-		return &result{code, msg,p.Route}
+		return &result{code, msg, p.Route}
 	}
 	msg := fmt.Sprintf("未在主机: %s上找到业务%s,请检查参数", p.Route, p.Worker)
-	return &result{400, msg,p.Route}
+	return &result{400, msg, p.Route}
 }
 
 func balance(p core.TaskMsg) (rv *result) {
 	log.Debug().Msgf("自动解析: %s任务的运行节点", p.Worker)
-	if hosts, ok := workerMap[p.Worker]; !ok {
+	hosts, ok := workerMap[p.Worker]
+	if !ok {
 		msg := fmt.Sprintf("投送的业务: %s未找到", p.Worker)
-		return &result{400, msg,""}
-	} else {
-		host := randone(hosts, p)
-		if host == "" {
-			msg := fmt.Sprintf("任务: %s在节点 %s都有部署,全节点不可达", p.Route, hosts)
-			return &result{400, msg,""}
-		}
-
-		log.Debug().Msgf("任务: %s在节点 %s都有部署,随机投送到: %s执行", p.Route, hosts, host)
-		code, msg := send(host, p)
-		msg = fmt.Sprintf("任务%s在%s都有部署,随机%s", p.Worker, hosts, msg)
-		return &result{code, msg,host}
+		return &result{400, msg, ""}
 	}
+	var host string
+	if p.Rand {
+		host = randOne(hosts, p)
+	} else {
+		host = balanceOne(hosts, p)
+	}
+	if host == "" {
+		msg := fmt.Sprintf("任务: %s在节点 %s都有部署,全节点不可达", p.Route, hosts)
+		return &result{400, msg, ""}
+	}
+
+	code, msg := send(host, p)
+	msg = fmt.Sprintf("任务%s在%s都有部署, %s", p.Worker, hosts, msg)
+	return &result{code, msg, host}
+
 }
 
-func randone(hosts []string, p core.TaskMsg) (host string) {
+type machine struct {
+	ip     string
+	proNum int
+}
+
+func balanceOne(hosts []string, p core.TaskMsg) (host string) {
+	var allMachine []machine
+	for k, v := range Ver {
+		allMachine = append(allMachine, machine{k, v.ProNum})
+	}
+	sort.Slice(allMachine, func(i, j int) bool {
+		//return allMachine[i].proNum > allMachine[j].proNum  // 降序
+		return allMachine[i].proNum < allMachine[j].proNum // 升序
+	})
+	for _, v := range allMachine {
+		host = v.ip
+		if _, err := netAvailable(host); err != nil {
+			log.Debug().Msgf("任务: %s在节点 %s都有部署,任务数最低的节点: %s不可用,更换下一个", p.Worker, hosts, host)
+			continue
+		}
+		log.Debug().Msgf("任务: %s在节点 %s都有部署,投送到任务数最低的节点: %s执行", p.Route, hosts, host)
+		return host
+	}
+	return ""
+}
+
+func randOne(hosts []string, p core.TaskMsg) (host string) {
 	tmp := make([]string, len(hosts), len(hosts))
 	copy(tmp, hosts)
 	for range tmp {
@@ -55,8 +87,8 @@ func randone(hosts []string, p core.TaskMsg) (host string) {
 			tmp = append(tmp[:index], tmp[index+1:]...)
 			continue
 		}
+		log.Debug().Msgf("任务: %s在节点 %s都有部署,随机投送到: %s执行", p.Route, hosts, host)
 		return host
 	}
 	return ""
-
 }

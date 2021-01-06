@@ -29,12 +29,12 @@ type ProcessInfo struct {
 }
 
 type PcInfo struct {
-	Version   string `json:"version"`
-	ProNum   int
-	MemTotal uint64
-	MemUsed  uint64
+	Version      string `json:"version"`
+	ProNum       int
+	MemTotal     uint64
+	MemUsed      uint64
 	TotalPercent float64
-	ProStatus []ProcessInfo
+	ProStatus    []ProcessInfo
 }
 
 type TaskMsg struct {
@@ -42,6 +42,7 @@ type TaskMsg struct {
 	Worker string `json:"worker"`
 	TaskID string `json:"task_id"`
 	Params string `json:"params"`
+	Rand   bool   `json:"rand"`
 }
 
 const PongWait = 20 * time.Second
