@@ -25,10 +25,15 @@ type ProcessInfo struct {
 	Mem     uint64
 	Threads int32
 	Files   int
+	CpuPer  float64
 }
 
 type PcInfo struct {
 	Version   string `json:"version"`
+	ProNum   int
+	MemTotal uint64
+	MemUsed  uint64
+	TotalPercent float64
 	ProStatus []ProcessInfo
 }
 
@@ -45,4 +50,4 @@ const UpdateWait = 5 * time.Second
 //白名单
 var Sites []string
 
-var Version = "1.0"
+var Version = "1.1"
