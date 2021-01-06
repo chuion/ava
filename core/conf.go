@@ -46,6 +46,7 @@ type TaskMsg struct {
 
 const PongWait = 20 * time.Second
 const UpdateWait = 5 * time.Second
+const PerMachineProcess = 10
 
 //白名单
 var Sites []string

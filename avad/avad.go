@@ -12,6 +12,7 @@ var wsConns = cmap.New()
 var wsStatus = cmap.New()
 var tcpStatus = cmap.New()
 
+
 func Manger(addrs []string) {
 
 	for _, host := range addrs {

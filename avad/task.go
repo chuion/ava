@@ -10,9 +10,17 @@ import (
 )
 
 type result struct {
-	Code int
-	Msg  string
+	Code  int
+	Msg   string
 	Route string
+}
+
+func resourceAvailable() (totalTasks, currentTasks int) {
+	totalTasks = core.PerMachineProcess * len(Ver)
+	for _, v := range Ver {
+		currentTasks = currentTasks + v.ProNum
+	}
+	return
 }
 
 func taskRouter(w http.ResponseWriter, r *http.Request) {
@@ -25,6 +33,15 @@ func taskRouter(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	totalTasks, currentTasks := resourceAvailable()
+	if currentTasks >= totalTasks {
+		msg := fmt.Sprintf("共能运行单台节点 %d个任务 * 在线节点数 %d 共%d个任务,当前已运行%d个任务,无法承载,请稍后再试", core.PerMachineProcess, len(Ver), totalTasks, currentTasks)
+		rv = &result{503, msg, p.Route}
+		json.NewEncoder(w).Encode(rv)
+		return
+	}
+
 	if p.Route != "" {
 		rv = fixed(p)
 
