@@ -33,7 +33,7 @@ func executor(command, arg, taskid, dir string) {
 	if err = cmd.Start(); err != nil {
 		log.Debug().Msgf("程序%s %s启动失败,任务id: %s,%s", script[0], script[1], taskid, err)
 		if err := os.Remove(filename); err != nil {
-			log.Debug().Msgf("临时参数文件删除失败 %s", err)
+			log.Debug().Msgf("程序启动失败,临时参数文件删除失败 %s", err)
 		}
 		return
 	}
@@ -51,7 +51,7 @@ func executor(command, arg, taskid, dir string) {
 		cmd.Wait()
 		cancel()
 		if err := os.Remove(filename); err != nil {
-			log.Debug().Msgf("临时参数文件删除失败 %s", err)
+			log.Debug().Msgf("任务执行完成,临时参数文件删除失败 %s", err)
 		}
 		log.Debug().Msgf("任务: %s 执行完成,退出", command)
 		core.ProcessStatus.Remove(taskid)
@@ -104,29 +104,27 @@ func Exists(path string) bool {
 }
 
 func asyncLog(ctx context.Context, stdout io.ReadCloser, dstlog *os.File) {
-	tmp := make([]byte, 1024)
-
+	buf := make([]byte, 1024, 1024)
+	defer dstlog.Close()
 	for {
 		select {
 		case <-ctx.Done():
 			log.Debug().Msgf("进程结束日志协程退出")
 			return
 		default:
-			strNum, err := stdout.Read(tmp)
+			strNum, err := stdout.Read(buf)
+			if strNum > 0 {
+				outputByte := buf[:strNum]
+				_, err = dstlog.Write(outputByte)
+				if err != nil {
+					log.Debug().Msgf("%s 日志文件写入失败 %s", dstlog.Name(), err)
+					return
+				}
+			}
 			if err != nil {
 				//读到结尾
 				if err == io.EOF || strings.Contains(err.Error(), "file already closed") {
 					err = nil
-				} else {
-					log.Debug().Msgf("%s 日志队列读取失败 %s", dstlog.Name(), err)
-					return
-				}
-			}
-			if strNum > 0 {
-				_, err = dstlog.Write(tmp)
-				if err != nil {
-					log.Debug().Msgf("%s 日志文件写入失败 %s", dstlog.Name(), err)
-					return
 				}
 			}
 		}
