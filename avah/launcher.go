@@ -45,7 +45,7 @@ func executor(command, arg, taskid, dir string) {
 	go asyncLog(ctx, stdout, dstlog)
 
 	log.Debug().Msgf("程序%s %s成功启动,任务id: %s 进程id: %d", script[0], script[1], taskid, cmd.Process.Pid)
-	core.ProcessStatus.Set(taskid,cmd.Process.Pid)
+	core.ProcessStatus.Set(taskid, cmd.Process.Pid)
 
 	go func() {
 		cmd.Wait()

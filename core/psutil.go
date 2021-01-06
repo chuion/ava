@@ -20,7 +20,7 @@ func GetPcInfo() (info PcInfo) {
 		}
 		proIns := process.Process{Pid: int32(pid)}
 
-		cpuper,_:=proIns.CPUPercent()
+		cpuper, _ := proIns.CPUPercent()
 		cpuper1, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", cpuper), 64)
 
 		Threads, _ := proIns.NumThreads()
@@ -33,7 +33,7 @@ func GetPcInfo() (info PcInfo) {
 			Pid:     int32(pid),
 			Threads: Threads,
 			Files:   len(f),
-			CpuPer: cpuper1,
+			CpuPer:  cpuper1,
 		})
 	}
 	info.ProStatus = rv

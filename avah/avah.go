@@ -58,7 +58,6 @@ func dial(w http.ResponseWriter, r *http.Request) {
 
 func Node() {
 
-
 	go listenTcp()
 
 	addr := strings.Join([]string{"0.0.0.0", ":", core.WsPort}, "")

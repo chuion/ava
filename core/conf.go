@@ -47,7 +47,9 @@ type TaskMsg struct {
 
 const PongWait = 20 * time.Second
 const UpdateWait = 5 * time.Second
-const PerMachineProcess = 10
+
+//每台主机最多运行业务进程数
+var PerMachineProcess = 10
 
 //白名单
 var Sites []string
