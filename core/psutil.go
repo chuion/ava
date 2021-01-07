@@ -41,7 +41,7 @@ func GetPcInfo() (info PcInfo) {
 	info.ProNum = len(rv)
 	m, _ := mem.VirtualMemory()
 	info.MemTotal = m.Total
-	info.MemUsed = m.Available
+	info.MemUsed = m.Used
 	cpu, _ := cpu.Percent(3*time.Second, false)
 	cpu1, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", cpu[0]), 64)
 	info.TotalPercent = cpu1
