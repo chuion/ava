@@ -56,7 +56,10 @@ type machine struct {
 func balanceOne(hosts []string, p core.TaskMsg) (host string) {
 	var allMachine []machine
 	for k, v := range Ver {
-		allMachine = append(allMachine, machine{k, v.ProNum})
+		//仅在有这个业务的主机里寻找
+		if core.StringInSlice(k,hosts){
+			allMachine = append(allMachine, machine{k, v.ProNum})
+		}
 	}
 	sort.Slice(allMachine, func(i, j int) bool {
 		//return allMachine[i].proNum > allMachine[j].proNum  // 降序
@@ -92,3 +95,4 @@ func randOne(hosts []string, p core.TaskMsg) (host string) {
 	}
 	return ""
 }
+
