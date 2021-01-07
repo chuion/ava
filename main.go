@@ -59,5 +59,6 @@ func LoadConfig(config string) []string {
 	nodes := viper.GetStringSlice("nodes")
 	core.Sites = viper.GetStringSlice("sites")
 	core.PerMachineProcess = viper.GetInt("permachineprocess")
+
 	return nodes
 }
