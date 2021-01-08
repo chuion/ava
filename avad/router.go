@@ -55,7 +55,7 @@ type machine struct {
 
 func balanceOne(hosts []string, p core.TaskMsg) (host string) {
 	var allMachine []machine
-	for k, v := range Ver {
+	for k, v := range AllInfo {
 		//仅在有这个业务的主机里寻找
 		if core.StringInSlice(k,hosts){
 			allMachine = append(allMachine, machine{k, v.ProNum})

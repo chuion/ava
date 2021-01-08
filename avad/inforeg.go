@@ -8,7 +8,7 @@ import (
 
 var workerMap = make(map[string][]string)
 var workerMapR = make(map[string][]string)
-var Ver = make(map[string]core.PcInfo)
+var AllInfo = make(map[string]core.PcInfo)
 
 func getNodeInfo(host string, c *websocket.Conn) {
 	for {
@@ -20,7 +20,7 @@ func getNodeInfo(host string, c *websocket.Conn) {
 		}
 
 		if value, ok := p["info"]; ok {
-			Ver[host] = value.PcInfo
+			AllInfo[host] = value.PcInfo
 			//log.Debug().Msgf("读取节点: %s 状态信息成功", host)
 			continue
 		}

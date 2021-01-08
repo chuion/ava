@@ -29,7 +29,7 @@ type ProcessInfo struct {
 }
 
 type PcInfo struct {
-	Version      string `json:"version"`
+	Version      string `json:"Version"`
 	ProNum       int
 	MemTotal     uint64
 	MemUsed      uint64
@@ -54,4 +54,4 @@ var PerMachineProcess int
 //白名单
 var Sites []string
 
-var Version = "1.11"
+var Version = "1.13"
