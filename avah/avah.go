@@ -21,13 +21,13 @@ func update() {
 			PcInfo: core.GetPcInfo(),
 		}
 		taskchan <- tmp
+		listAll(".")
+		taskchan <- allConfig
 		<-ticker.C
 	}
 }
 
 func updateInfo() {
-	listAll(".")
-	taskchan <- allConfig
 	go sendMsg()
 	go update()
 }

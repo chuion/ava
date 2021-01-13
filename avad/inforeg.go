@@ -15,7 +15,7 @@ func getNodeInfo(host string, c *websocket.Conn) {
 		p := make(map[string]core.LauncherConf)
 		err := c.ReadJSON(&p)
 		if err != nil {
-			log.Debug().Msgf("读取节点: %s注册信息失败 %s", host, err)
+			log.Debug().Msgf("读取节点: %s信息失败 %s", host, err)
 			return
 		}
 
@@ -36,7 +36,7 @@ func getNodeInfo(host string, c *websocket.Conn) {
 		for k, v := range workerMapR {
 			workerMapR[k] = RemoveRepeatedElement(v)
 		}
-		log.Debug().Msgf("读取节点: %s注册信息成功", host)
+		//log.Debug().Msgf("读取节点: %s注册信息成功", host)
 	}
 
 }

@@ -26,7 +26,8 @@ func Manger(addrs []string) {
 	http.HandleFunc("/webWsStatus", webWsStatus)
 	http.HandleFunc("/webWorkerMapR", webWorkerMapR)
 	http.HandleFunc("/info", info)
-	http.HandleFunc("/allInfo", getAllInfo)
+	http.HandleFunc("/v1/allInfo", getAllInfo)
+	http.Handle("/", http.FileServer(http.Dir("dist")))
 
 	addr := strings.Join([]string{"0.0.0.0", ":", core.Web}, "")
 	http.ListenAndServe(addr, nil)
