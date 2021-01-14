@@ -31,14 +31,14 @@ func listAll(path string) {
 	}
 	for _, fi := range files {
 		if fi.IsDir() {
-			log.Debug().Msgf("解析%s目录下的配置文件", fi.Name())
+			//log.Debug().Msgf("解析%s目录下的配置文件", fi.Name())
 			var config core.LauncherConf
 			confname := "launcher1.json"
 			name := filepath.Join(fi.Name(), confname)
 			viper.SetConfigFile(name)
 			err := viper.ReadInConfig() // 读取配置数据
 			if err != nil {
-				log.Debug().Msgf("目录: %s下没有找到%s,跳过", fi.Name(), confname)
+				//log.Debug().Msgf("目录: %s下没有找到%s,跳过", fi.Name(), confname)
 				continue
 			}
 			viper.Unmarshal(&config) // 将配置信息绑定到结构体上

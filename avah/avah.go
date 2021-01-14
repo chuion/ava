@@ -21,6 +21,7 @@ func update() {
 			PcInfo: core.GetPcInfo(),
 		}
 		taskchan <- tmp
+		//todo 使用文件监控实现配置文件变更才更新
 		listAll(".")
 		taskchan <- allConfig
 		<-ticker.C
