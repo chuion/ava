@@ -27,6 +27,7 @@ func Manger(addrs []string) {
 	http.HandleFunc("/webWorkerMapR", webWorkerMapR)
 	http.HandleFunc("/info", info)
 	http.HandleFunc("/v1/allInfo", getAllInfo)
+	http.HandleFunc("/v1/proxy", getProxyInfo)
 	http.Handle("/", http.FileServer(http.Dir("dist")))
 
 	addr := strings.Join([]string{"0.0.0.0", ":", core.Web}, "")
