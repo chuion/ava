@@ -48,6 +48,7 @@ func taskRouter(w http.ResponseWriter, r *http.Request) {
 	totalTasks, currentTasks, available := resourceAvailable()
 	if !available {
 		msg := fmt.Sprintf("单节点 %d个任务 * 在线节点数 %d 共能执行%d个任务,已运行%d个,无法承载,请稍后再试", core.PerMachineProcess, len(AllInfo), totalTasks, currentTasks)
+		log.Debug().Msgf(msg)
 		rv = &result{503, msg, p.Route}
 		json.NewEncoder(w).Encode(rv)
 		return
